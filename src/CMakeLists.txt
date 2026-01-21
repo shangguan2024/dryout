@@ -6,7 +6,7 @@ find_package(SDL2_image CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
-add_executable(src main.cpp)
+add_executable(dryout main.cpp)
 
 add_subdirectory(core)
 add_subdirectory(renderer)
@@ -15,7 +15,7 @@ add_subdirectory(utils)
 add_subdirectory(game)
 add_subdirectory(platform)
 
-target_link_libraries(src
+target_link_libraries(dryout
     PRIVATE
     core
     renderer
@@ -29,4 +29,4 @@ target_link_libraries(src
     glm::glm
 )
 
-install(TARGETS src)
+install(TARGETS dryout)

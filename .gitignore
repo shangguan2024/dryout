@@ -1,3 +1,7 @@
+# Ignore files
+
+res/textures/atlas/
+
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
