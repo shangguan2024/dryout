@@ -34,6 +34,8 @@ ResourceManager *ResourceManager::getInstance() {
 }
 
 void ResourceManager::loadTextures(const std::string &path, json &j, unsigned int &texture_id) {
+    std::cout << "Loading texture " << path << "..." << std::endl;
+
     glGenTextures(1, &texture_id);
 
     std::ifstream json_file(path + ".json");
@@ -43,6 +45,8 @@ void ResourceManager::loadTextures(const std::string &path, json &j, unsigned in
     }
     json_file >> j;
     json_file.close();
+
+    std::cout << "Texture " << path << " loaded." << std::endl;
 }
 
 unsigned int ResourceManager::getTextureId(TextureType type) {

@@ -1,6 +1,7 @@
 #include "Graphics.hpp"
 
 #include <SDL2/SDL.h>
+#include <glad/glad.h>
 #include <iostream>
 
 namespace dryout {
@@ -31,28 +32,43 @@ Graphics::~Graphics() {
 }
 
 void Graphics::init() {
+    std::cout << "Initializing graphics..." << std::endl;
+
+    std::cout << "Initializing SDL..." << std::endl;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not be initialized! SDL_Error: " << SDL_GetError() << std::endl;
         return;
     }
+    std::cout << "SDL initialized." << std::endl;
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
+    std::cout << "Initializing window..." << std::endl;
     window = SDL_CreateWindow("Dryout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600,
-                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN); // todo
     if (!window) {
         std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         return;
     }
+    std::cout << "Window created." << std::endl;
 
+    std::cout << "Initializing OpenGL Context..." << std::endl;
     context = SDL_GL_CreateContext(window);
     if (!context) {
         std::cerr << "OpenGL context could not be created! SDL_Error: " << SDL_GetError()
                   << std::endl;
         return;
     }
+    std::cout << "OpenGL context created." << std::endl;
+
+    std::cout << "Initializing glad..." << std::endl;
+    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+        std::cerr << "Failed to initialize glad!" << std::endl;
+        return;
+    }
+    std::cout << "glad initialized." << std::endl;
 }
 
 } // namespace dryout

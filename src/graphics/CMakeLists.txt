@@ -8,7 +8,7 @@ add_library(graphics
 target_include_directories(graphics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(graphics
-    PRIVATE
+    PUBLIC
     utils
     $<IF:$<TARGET_EXISTS:SDL2::SDL2main>,SDL2::SDL2main,>
     $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>

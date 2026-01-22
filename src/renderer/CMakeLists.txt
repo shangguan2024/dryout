@@ -6,7 +6,7 @@ add_library(renderer
 target_include_directories(renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(renderer
-    PRIVATE
+    PUBLIC
     $<IF:$<TARGET_EXISTS:SDL2::SDL2main>,SDL2::SDL2main,>
     $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
     $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>

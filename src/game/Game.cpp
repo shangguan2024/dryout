@@ -4,6 +4,8 @@
 
 namespace dryout {
 
+Game *Game::instance = nullptr;
+
 Game *Game::getInstance() {
     if (instance == nullptr) {
         instance = new Game();

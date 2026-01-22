@@ -6,7 +6,7 @@ add_library(core
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(core
-    PRIVATE
+    PUBLIC
     utils
     $<IF:$<TARGET_EXISTS:SDL2::SDL2main>,SDL2::SDL2main,>
     $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
