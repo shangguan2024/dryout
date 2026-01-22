@@ -69,6 +69,8 @@ void Graphics::init() {
         return;
     }
     std::cout << "glad initialized." << std::endl;
+
+    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 }
 
 } // namespace dryout
