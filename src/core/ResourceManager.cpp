@@ -1,7 +1,7 @@
 #include "ResourceManager.hpp"
+#include "Graphics.hpp"
 #include "json.hpp"
 
-#include <glad/glad.h>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -36,7 +36,8 @@ ResourceManager *ResourceManager::getInstance() {
 void ResourceManager::loadTextures(const std::string &path, json &j, unsigned int &texture_id) {
     std::cout << "Loading texture " << path << "..." << std::endl;
 
-    glGenTextures(1, &texture_id);
+    Graphics *graphics = Graphics::getInstance();
+    texture_id = graphics->loadTextureAtlas(path + ".png");
 
     std::ifstream json_file(path + ".json");
     if (!json_file.is_open()) {

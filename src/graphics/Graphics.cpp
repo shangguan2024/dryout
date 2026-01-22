@@ -1,6 +1,7 @@
 #include "Graphics.hpp"
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <glad/glad.h>
 #include <iostream>
 
@@ -13,6 +14,33 @@ Graphics *Graphics::getInstance() {
         instance = new Graphics();
     }
     return instance;
+}
+
+unsigned int Graphics::loadTextureAtlas(const std::string path) {
+    std::cout << "Loading texture atlas " << path << "..." << std::endl;
+
+    SDL_Surface *surface = IMG_Load(path.c_str());
+    if (!surface) {
+        std::cerr << "Failed to load texture atlas! SDL_Error: " << SDL_GetError() << std::endl;
+        return 0;
+    }
+
+    unsigned int texture_id = 0;
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 surface->pixels);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    SDL_FreeSurface(surface);
+
+    std::cout << "Texture atlas loaded." << std::endl;
+    return texture_id;
+}
+
+void Graphics::swapWindow() {
+    SDL_GL_SwapWindow(window);
 }
 
 Graphics::Graphics() : window(nullptr), context(nullptr) {
@@ -47,7 +75,7 @@ void Graphics::init() {
 
     std::cout << "Initializing window..." << std::endl;
     window = SDL_CreateWindow("Dryout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600,
-                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN); // todo
+                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (!window) {
         std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         return;
@@ -70,6 +98,15 @@ void Graphics::init() {
     }
     std::cout << "glad initialized." << std::endl;
 
+    std::cout << "Initializing SDL_image..." << std::endl;
+    if (IMG_Init(IMG_INIT_PNG) == 0) {
+        std::cerr << "SDL_image could not be initialized! SDL_Error: " << IMG_GetError()
+                  << std::endl;
+        return;
+    }
+    std::cout << "SDL_image initialized." << std::endl;
+
+    std::cout << "Graphics initialized." << std::endl;
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 }
 

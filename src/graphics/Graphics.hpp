@@ -2,12 +2,17 @@
 #define GRAPHICS_HPP
 
 #include <SDL2/SDL.h>
+#include <string>
 
 namespace dryout {
 
 class Graphics {
   public:
     static Graphics *getInstance();
+
+    unsigned int loadTextureAtlas(const std::string path);
+
+    void swapWindow();
 
   private:
     Graphics();
