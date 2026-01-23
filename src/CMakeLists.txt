@@ -13,7 +13,6 @@ add_subdirectory(renderer)
 add_subdirectory(graphics)
 add_subdirectory(utils)
 add_subdirectory(game)
-add_subdirectory(platform)
 
 target_link_libraries(dryout
     PRIVATE
