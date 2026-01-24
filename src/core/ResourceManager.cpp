@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <filesystem>
 
 using json = nlohmann::json;
 
@@ -20,14 +21,17 @@ ResourceManager *ResourceManager::instance = nullptr;
 ResourceManager::ResourceManager() {
     std::cout << "Initializing resource manager..." << std::endl;
 
+    std::filesystem::path root = std::filesystem::current_path().parent_path() / "res";
+
     std::cout << "Loading textures..." << std::endl;
-    loadTexture("../res/textures/atlas/ui_atlas", ui_atlas, ui_atlas_texture);
-    loadTexture("../res/textures/atlas/tilesets_atlas", tileset_atlas, tileset_atlas_texture);
-    loadTexture("../res/textures/atlas/sprites_atlas", sprite_atlas, sprite_atlas_texture);
+    loadTexture(root / "textures" / "atlas", "ui_atlas", ui_atlas, ui_atlas_texture);
+    loadTexture(root / "textures" / "atlas", "tilesets_atlas", tileset_atlas,
+                tileset_atlas_texture);
+    loadTexture(root / "textures" / "atlas", "sprites_atlas", sprite_atlas, sprite_atlas_texture);
     std::cout << "Textures loaded." << std::endl;
 
     std::cout << "Loading shaders..." << std::endl;
-    loadShader("../res/shaders/frame_shader", frame_vertex_shader, frame_fragment_shader,
+    loadShader(root / "shaders", "frame_shader", frame_vertex_shader, frame_fragment_shader,
                frame_shader);
     std::cout << "Shaders loaded." << std::endl;
 
@@ -36,7 +40,9 @@ ResourceManager::ResourceManager() {
     std::cout << "Resource manager initialized." << std::endl;
 }
 
-ResourceManager::~ResourceManager() {}
+ResourceManager::~ResourceManager() {
+    // TODO: Free all resources
+}
 
 ResourceManager *ResourceManager::getInstance() {
     if (instance == nullptr) {
@@ -45,10 +51,12 @@ ResourceManager *ResourceManager::getInstance() {
     return instance;
 }
 
-void ResourceManager::loadTexture(const std::string &path, json &j, Texture &texture) {
-    std::cout << "Loading texture " << path << "..." << std::endl;
+void ResourceManager::loadTexture(const std::filesystem::path &path,
+                                  const std::string &texture_name, json &j, Texture &texture) {
+    std::cout << "Loading texture " << (path / (texture_name + ".png")).string() << "..."
+              << std::endl;
 
-    SDL_Surface *surface = IMG_Load((path + ".png").c_str());
+    SDL_Surface *surface = IMG_Load((path / (texture_name + ".png")).string().c_str());
     if (!surface) {
         std::cerr << "Failed to load texture atlas! SDL_Error: " << SDL_GetError() << std::endl;
         return;
@@ -56,25 +64,26 @@ void ResourceManager::loadTexture(const std::string &path, json &j, Texture &tex
     texture = Texture(surface);
     SDL_FreeSurface(surface);
 
-    std::ifstream json_file(path + ".json");
+    std::ifstream json_file(path / (texture_name + ".json"));
     if (!json_file.is_open()) {
-        std::cerr << "Error: Failed to open file " << path << ".json" << std::endl;
+        std::cerr << "Error: Failed to open file " << (path / (texture_name + ".json")).string()
+                  << std::endl;
         return;
     }
     json_file >> j;
     json_file.close();
 
-    std::cout << "Texture " << path << " loaded." << std::endl;
+    std::cout << "Texture " << (path / (texture_name + ".png")).string() << " loaded." << std::endl;
 }
 
-void ResourceManager::loadShader(const std::string &path, std::string &vert, std::string &frag,
-                                 Shader &shader) {
-    std::cout << "Loading shader " << path << "..." << std::endl;
+void ResourceManager::loadShader(const std::filesystem::path &path, const std::string &shader_name,
+                                 std::string &vert, std::string &frag, Shader &shader) {
+    std::cout << "Loading shader " << shader_name << "..." << std::endl;
 
-    auto parseShaderSource = [](const std::string &path, std::string &source) -> void {
+    auto parseShaderSource = [](const std::filesystem::path &path, std::string &source) -> void {
         std::ifstream file(path);
         if (!file.is_open()) {
-            std::cerr << "Error: Failed to open file " << path << std::endl;
+            std::cerr << "Error: Failed to open file " << path.string() << std::endl;
             return;
         }
         source =
@@ -82,12 +91,12 @@ void ResourceManager::loadShader(const std::string &path, std::string &vert, std
         file.close();
     };
 
-    parseShaderSource(path + ".vert", vert);
-    parseShaderSource(path + ".frag", frag);
+    parseShaderSource(path / (shader_name + ".vert"), vert);
+    parseShaderSource(path / (shader_name + ".frag"), frag);
 
     shader = Shader(vert, frag);
 
-    std::cout << "Shader " << path << " loaded." << std::endl;
+    std::cout << "Shader " << shader_name << " loaded." << std::endl;
 }
 
 const json &ResourceManager::getTextureFrameInfo(TextureType type,

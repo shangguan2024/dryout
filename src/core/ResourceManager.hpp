@@ -7,6 +7,7 @@
 
 #include <glad/glad.h>
 #include <string>
+#include <filesystem>
 
 using json = nlohmann::json;
 
@@ -32,8 +33,10 @@ class ResourceManager {
     ResourceManager(ResourceManager &&) = delete;
     ResourceManager &operator=(ResourceManager &&) = delete;
 
-    void loadTexture(const std::string &path, json &j, Texture &texture);
-    void loadShader(const std::string &path, std::string &vert, std::string &frag, Shader &shader);
+    void loadTexture(const std::filesystem::path &path, const std::string &texture_name, json &j,
+                     Texture &texture);
+    void loadShader(const std::filesystem::path &path, const std::string &shader_name,
+                    std::string &vert, std::string &frag, Shader &shader);
 
     const json &getTextureFrameInfo(TextureType type, const std::string &texture_name) const;
 
