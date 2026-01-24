@@ -58,16 +58,38 @@ GLuint Graphics::createShaderProgram(const std::string &vertex_source,
                                      const std::string &fragment_source) {
     GLuint vertex_shader_id = compileShader(GL_VERTEX_SHADER, vertex_source);
     if (!vertex_shader_id) {
+        std::cerr << "Failed to compile vertex shader!" << std::endl;
         return 0;
     }
+
     GLuint fragment_shader_id = compileShader(GL_FRAGMENT_SHADER, fragment_source);
     if (!fragment_shader_id) {
+        std::cerr << "Failed to compile fragment shader!" << std::endl;
         return 0;
     }
+
     GLuint shader_id = glCreateProgram();
+    if (!shader_id) {
+        std::cerr << "Failed to create shader program!" << std::endl;
+        return 0;
+    }
+
     glAttachShader(shader_id, vertex_shader_id);
     glAttachShader(shader_id, fragment_shader_id);
     glLinkProgram(shader_id);
+
+    GLint success;
+    glGetProgramiv(shader_id, GL_LINK_STATUS, &success);
+    if (!success) {
+        GLint log_length;
+        glGetProgramiv(shader_id, GL_INFO_LOG_LENGTH, &log_length);
+        GLchar *info_log = new GLchar[log_length];
+        glGetProgramInfoLog(shader_id, log_length, nullptr, info_log);
+        std::cerr << "Error: Failed to link shader program! Info Log: " << info_log << std::endl;
+        delete[] info_log;
+        return 0;
+    }
+
     glDeleteShader(vertex_shader_id);
     glDeleteShader(fragment_shader_id);
 
