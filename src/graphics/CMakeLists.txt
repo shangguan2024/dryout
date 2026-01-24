@@ -2,6 +2,7 @@ add_library(graphics
     STATIC
     Graphics.cpp
     Texture.cpp
+    Shader.cpp
 )
 
 target_include_directories(graphics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

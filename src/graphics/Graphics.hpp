@@ -11,10 +11,6 @@ class Graphics {
   public:
     static Graphics *getInstance();
 
-    GLuint compileShader(GLenum type, const std::string &shader);
-    GLuint createShaderProgram(const std::string &vertex_source,
-                               const std::string &fragment_source);
-
     void swapWindow();
 
   private:

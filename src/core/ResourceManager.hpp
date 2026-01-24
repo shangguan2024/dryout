@@ -2,6 +2,7 @@
 #define RESOURCE_MANAGER_HPP
 
 #include "Texture.hpp"
+#include "Shader.hpp"
 #include "json.hpp"
 
 #include <glad/glad.h>
@@ -32,8 +33,7 @@ class ResourceManager {
     ResourceManager &operator=(ResourceManager &&) = delete;
 
     void loadTexture(const std::string &path, json &j, Texture &texture);
-    void loadShader(const std::string &path, std::string &vert, std::string &frag,
-                    GLuint &shader_id);
+    void loadShader(const std::string &path, std::string &vert, std::string &frag, Shader &shader);
 
     const json &getTextureFrameInfo(TextureType type, const std::string &texture_name) const;
 
@@ -41,7 +41,7 @@ class ResourceManager {
     json ui_atlas, tileset_atlas, sprite_atlas;
     Texture ui_atlas_texture, tileset_atlas_texture, sprite_atlas_texture;
     std::string frame_vertex_shader, frame_fragment_shader;
-    GLuint frame_shader_program_id;
+    Shader frame_shader;
 };
 
 } // namespace dryout

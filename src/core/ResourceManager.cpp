@@ -1,9 +1,9 @@
 #include "ResourceManager.hpp"
 #include "Renderer.hpp"
-#include "Graphics.hpp"
+#include "Texture.hpp"
+#include "Shader.hpp"
 #include "json.hpp"
 
-#include <glad/glad.h>
 #include <SDL2/SDL_image.h>
 #include <fstream>
 #include <iostream>
@@ -28,7 +28,7 @@ ResourceManager::ResourceManager() {
 
     std::cout << "Loading shaders..." << std::endl;
     loadShader("../res/shaders/frame_shader", frame_vertex_shader, frame_fragment_shader,
-               frame_shader_program_id);
+               frame_shader);
     std::cout << "Shaders loaded." << std::endl;
 
     Renderer::init();
@@ -68,7 +68,7 @@ void ResourceManager::loadTexture(const std::string &path, json &j, Texture &tex
 }
 
 void ResourceManager::loadShader(const std::string &path, std::string &vert, std::string &frag,
-                                 GLuint &shader_id) {
+                                 Shader &shader) {
     std::cout << "Loading shader " << path << "..." << std::endl;
 
     auto parseShaderSource = [](const std::string &path, std::string &source) -> void {
@@ -85,8 +85,7 @@ void ResourceManager::loadShader(const std::string &path, std::string &vert, std
     parseShaderSource(path + ".vert", vert);
     parseShaderSource(path + ".frag", frag);
 
-    Graphics *graphics = Graphics::getInstance();
-    shader_id = graphics->createShaderProgram(vert, frag);
+    shader = Shader(vert, frag);
 
     std::cout << "Shader " << path << " loaded." << std::endl;
 }
