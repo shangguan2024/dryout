@@ -11,8 +11,6 @@ class Graphics {
   public:
     static Graphics *getInstance();
 
-    GLuint loadTextureAtlas(const SDL_Surface *surface);
-
     GLuint compileShader(GLenum type, const std::string &shader);
     GLuint createShaderProgram(const std::string &vertex_source,
                                const std::string &fragment_source);

@@ -17,22 +17,6 @@ Graphics *Graphics::getInstance() {
     return instance;
 }
 
-GLuint Graphics::loadTextureAtlas(const SDL_Surface *surface) {
-    if (!surface) {
-        std::cerr << "SDL_Surface is null!" << std::endl;
-        return 0;
-    }
-    GLuint texture_id = 0;
-    glGenTextures(1, &texture_id);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                 surface->pixels);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    return texture_id;
-}
-
 GLuint Graphics::compileShader(GLenum type, const std::string &shader) {
     GLuint shader_id = glCreateShader(type);
     const char *shader_source = shader.c_str();

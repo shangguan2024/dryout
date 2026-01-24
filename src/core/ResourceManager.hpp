@@ -1,6 +1,7 @@
 #ifndef RESOURCE_MANAGER_HPP
 #define RESOURCE_MANAGER_HPP
 
+#include "Texture.hpp"
 #include "json.hpp"
 
 #include <glad/glad.h>
@@ -30,16 +31,15 @@ class ResourceManager {
     ResourceManager(ResourceManager &&) = delete;
     ResourceManager &operator=(ResourceManager &&) = delete;
 
-    void loadTexture(const std::string &path, json &j, GLuint &texture_id);
+    void loadTexture(const std::string &path, json &j, Texture &texture);
     void loadShader(const std::string &path, std::string &vert, std::string &frag,
                     GLuint &shader_id);
 
-    GLuint getTextureId(TextureType type);
     const json &getTextureFrameInfo(TextureType type, const std::string &texture_name) const;
 
     static ResourceManager *instance;
     json ui_atlas, tileset_atlas, sprite_atlas;
-    GLuint ui_atlas_texture_id, tileset_atlas_texture_id, sprite_atlas_texture_id;
+    Texture ui_atlas_texture, tileset_atlas_texture, sprite_atlas_texture;
     std::string frame_vertex_shader, frame_fragment_shader;
     GLuint frame_shader_program_id;
 };

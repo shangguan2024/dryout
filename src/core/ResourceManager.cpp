@@ -21,9 +21,9 @@ ResourceManager::ResourceManager() {
     std::cout << "Initializing resource manager..." << std::endl;
 
     std::cout << "Loading textures..." << std::endl;
-    loadTexture("../res/textures/atlas/ui_atlas", ui_atlas, ui_atlas_texture_id);
-    loadTexture("../res/textures/atlas/tilesets_atlas", tileset_atlas, tileset_atlas_texture_id);
-    loadTexture("../res/textures/atlas/sprites_atlas", sprite_atlas, sprite_atlas_texture_id);
+    loadTexture("../res/textures/atlas/ui_atlas", ui_atlas, ui_atlas_texture);
+    loadTexture("../res/textures/atlas/tilesets_atlas", tileset_atlas, tileset_atlas_texture);
+    loadTexture("../res/textures/atlas/sprites_atlas", sprite_atlas, sprite_atlas_texture);
     std::cout << "Textures loaded." << std::endl;
 
     std::cout << "Loading shaders..." << std::endl;
@@ -45,16 +45,15 @@ ResourceManager *ResourceManager::getInstance() {
     return instance;
 }
 
-void ResourceManager::loadTexture(const std::string &path, json &j, GLuint &texture_id) {
+void ResourceManager::loadTexture(const std::string &path, json &j, Texture &texture) {
     std::cout << "Loading texture " << path << "..." << std::endl;
 
-    Graphics *graphics = Graphics::getInstance();
     SDL_Surface *surface = IMG_Load((path + ".png").c_str());
     if (!surface) {
         std::cerr << "Failed to load texture atlas! SDL_Error: " << SDL_GetError() << std::endl;
         return;
     }
-    texture_id = graphics->loadTextureAtlas(surface);
+    texture = Texture(surface);
     SDL_FreeSurface(surface);
 
     std::ifstream json_file(path + ".json");
@@ -90,20 +89,6 @@ void ResourceManager::loadShader(const std::string &path, std::string &vert, std
     shader_id = graphics->createShaderProgram(vert, frag);
 
     std::cout << "Shader " << path << " loaded." << std::endl;
-}
-
-GLuint ResourceManager::getTextureId(TextureType type) {
-    switch (type) {
-    case TextureType::UI_ATLAS:
-        return ui_atlas_texture_id;
-    case TextureType::TILESET_ATLAS:
-        return tileset_atlas_texture_id;
-    case TextureType::SPRITE_ATLAS:
-        return sprite_atlas_texture_id;
-    default:
-        std::cerr << "Error: Invalid texture type." << std::endl;
-        return 0;
-    }
 }
 
 const json &ResourceManager::getTextureFrameInfo(TextureType type,
