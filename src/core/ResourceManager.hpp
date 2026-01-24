@@ -3,6 +3,7 @@
 
 #include "json.hpp"
 
+#include <glad/glad.h>
 #include <string>
 
 using json = nlohmann::json;
@@ -20,8 +21,8 @@ class ResourceManager {
   public:
     static ResourceManager *getInstance();
 
-    unsigned int getTextureId(TextureType type);
-    const json &getTextureFrame(TextureType type, const std::string &texture_name) const;
+    GLuint getTextureId(TextureType type);
+    const json &getTextureFrameInfo(TextureType type, const std::string &texture_name) const;
 
   private:
     ResourceManager();
@@ -32,11 +33,15 @@ class ResourceManager {
     ResourceManager(ResourceManager &&) = delete;
     ResourceManager &operator=(ResourceManager &&) = delete;
 
-    void loadTextures(const std::string &path, json &j, unsigned int &texture_id);
+    void loadTexture(const std::string &path, json &j, GLuint &texture_id);
+    void loadShader(const std::string &path, std::string &vert, std::string &frag,
+                    GLuint &shader_id);
 
     static ResourceManager *instance;
     json ui_atlas, tileset_atlas, sprite_atlas;
-    unsigned int ui_atlas_texture_id, tileset_atlas_texture_id, sprite_atlas_texture_id;
+    GLuint ui_atlas_texture_id, tileset_atlas_texture_id, sprite_atlas_texture_id;
+    std::string frame_vertex_shader, frame_fragment_shader;
+    GLuint frame_shader_id;
 };
 
 } // namespace dryout

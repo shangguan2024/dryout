@@ -1,5 +1,6 @@
 #include "Graphics.hpp"
 
+#include <glad/glad.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <glad/glad.h>
@@ -16,16 +17,12 @@ Graphics *Graphics::getInstance() {
     return instance;
 }
 
-unsigned int Graphics::loadTextureAtlas(const std::string path) {
-    std::cout << "Loading texture atlas " << path << "..." << std::endl;
-
-    SDL_Surface *surface = IMG_Load(path.c_str());
+GLuint Graphics::loadTextureAtlas(const SDL_Surface *surface) {
     if (!surface) {
-        std::cerr << "Failed to load texture atlas! SDL_Error: " << SDL_GetError() << std::endl;
+        std::cerr << "SDL_Surface is null!" << std::endl;
         return 0;
     }
-
-    unsigned int texture_id = 0;
+    GLuint texture_id = 0;
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -33,10 +30,48 @@ unsigned int Graphics::loadTextureAtlas(const std::string path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    SDL_FreeSurface(surface);
-
-    std::cout << "Texture atlas loaded." << std::endl;
     return texture_id;
+}
+
+GLuint Graphics::compileShader(GLenum type, const std::string &shader) {
+    GLuint shader_id = glCreateShader(type);
+    const char *shader_source = shader.c_str();
+    glShaderSource(shader_id, 1, &shader_source, nullptr);
+    glCompileShader(shader_id);
+
+    GLint success;
+    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        GLint log_length;
+        glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &log_length);
+        GLchar *info_log = new GLchar[log_length];
+        glGetShaderInfoLog(shader_id, log_length, nullptr, info_log);
+        std::cerr << "Error: Failed to compile shader! Info Log: " << info_log << std::endl;
+        delete[] info_log;
+        return 0;
+    }
+
+    return shader_id;
+}
+
+GLuint Graphics::createShaderProgram(const std::string &vertex_source,
+                                     const std::string &fragment_source) {
+    GLuint vertex_shader_id = compileShader(GL_VERTEX_SHADER, vertex_source);
+    if (!vertex_shader_id) {
+        return 0;
+    }
+    GLuint fragment_shader_id = compileShader(GL_FRAGMENT_SHADER, fragment_source);
+    if (!fragment_shader_id) {
+        return 0;
+    }
+    GLuint shader_id = glCreateProgram();
+    glAttachShader(shader_id, vertex_shader_id);
+    glAttachShader(shader_id, fragment_shader_id);
+    glLinkProgram(shader_id);
+    glDeleteShader(vertex_shader_id);
+    glDeleteShader(fragment_shader_id);
+
+    return shader_id;
 }
 
 void Graphics::swapWindow() {

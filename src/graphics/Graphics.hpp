@@ -1,6 +1,7 @@
 #ifndef GRAPHICS_HPP
 #define GRAPHICS_HPP
 
+#include <glad/glad.h>
 #include <SDL2/SDL.h>
 #include <string>
 
@@ -10,7 +11,11 @@ class Graphics {
   public:
     static Graphics *getInstance();
 
-    unsigned int loadTextureAtlas(const std::string path);
+    GLuint loadTextureAtlas(const SDL_Surface *surface);
+
+    GLuint compileShader(GLenum type, const std::string &shader);
+    GLuint createShaderProgram(const std::string &vertex_source,
+                               const std::string &fragment_source);
 
     void swapWindow();
 
