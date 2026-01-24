@@ -28,7 +28,7 @@ ResourceManager::ResourceManager() {
 
     std::cout << "Loading shaders..." << std::endl;
     loadShader("../res/shaders/frame_shader", frame_vertex_shader, frame_fragment_shader,
-               frame_shader_id);
+               frame_shader_program_id);
     std::cout << "Shaders loaded." << std::endl;
 
     Renderer::init();

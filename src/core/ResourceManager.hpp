@@ -21,9 +21,6 @@ class ResourceManager {
   public:
     static ResourceManager *getInstance();
 
-    GLuint getTextureId(TextureType type);
-    const json &getTextureFrameInfo(TextureType type, const std::string &texture_name) const;
-
   private:
     ResourceManager();
     ~ResourceManager();
@@ -37,11 +34,14 @@ class ResourceManager {
     void loadShader(const std::string &path, std::string &vert, std::string &frag,
                     GLuint &shader_id);
 
+    GLuint getTextureId(TextureType type);
+    const json &getTextureFrameInfo(TextureType type, const std::string &texture_name) const;
+
     static ResourceManager *instance;
     json ui_atlas, tileset_atlas, sprite_atlas;
     GLuint ui_atlas_texture_id, tileset_atlas_texture_id, sprite_atlas_texture_id;
     std::string frame_vertex_shader, frame_fragment_shader;
-    GLuint frame_shader_id;
+    GLuint frame_shader_program_id;
 };
 
 } // namespace dryout
