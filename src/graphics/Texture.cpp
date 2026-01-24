@@ -7,11 +7,15 @@
 
 namespace dryout {
 
-Texture::Texture() {}
+Texture::Texture() : texture_id(0), width(0), height(0), channels(0) {}
 
-Texture::~Texture() {}
+Texture::~Texture() {
+    if (texture_id) {
+        glDeleteTextures(1, &texture_id);
+    }
+}
 
-Texture::Texture(const SDL_Surface *surface) : texture_id(0) {
+Texture::Texture(const SDL_Surface *surface) : texture_id(0), width(0), height(0), channels(0) {
     if (!surface) {
         std::cerr << "SDL_Surface is null!" << std::endl;
         return;
@@ -21,20 +25,33 @@ Texture::Texture(const SDL_Surface *surface) : texture_id(0) {
     height = surface->h;
     channels = surface->format->BytesPerPixel;
 
+    GLenum format = GL_RGBA;
+    if (channels == 4) {
+        format = GL_RGBA;
+    }
+
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE,
                  surface->pixels);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Texture::bind(GLuint slot) const {
-    // todo
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
 }
 
 void Texture::unbind() const {
-    // todo
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 int Texture::getWidth() const {
