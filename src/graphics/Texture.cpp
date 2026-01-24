@@ -25,7 +25,7 @@ Texture::Texture(const SDL_Surface *surface) : texture_id(0), width(0), height(0
     height = surface->h;
     channels = surface->format->BytesPerPixel;
 
-    GLenum format = GL_RGBA;
+    GLenum format = GL_RGB;
     if (channels == 4) {
         format = GL_RGBA;
     }
