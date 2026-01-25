@@ -94,7 +94,7 @@ void ResourceManager::loadShader(const std::filesystem::path &path, const std::s
     parseShaderSource(path / (shader_name + ".vert"), vert);
     parseShaderSource(path / (shader_name + ".frag"), frag);
 
-    shader = Shader(vert, frag);
+    shader = std::move(Shader(vert, frag));
 
     std::cout << "Shader " << shader_name << " loaded." << std::endl;
 }

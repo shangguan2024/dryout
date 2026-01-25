@@ -55,6 +55,21 @@ Shader::Shader(const std::string &vertex_source, const std::string &fragment_sou
     glDeleteShader(fragment_shader_id);
 }
 
+Shader::Shader(Shader &&other) noexcept : shader_program_id(other.shader_program_id) {
+    other.shader_program_id = 0;
+}
+
+Shader &Shader::operator=(Shader &&other) noexcept {
+    if (this != &other) {
+        if (shader_program_id) {
+            glDeleteProgram(shader_program_id);
+        }
+        shader_program_id = other.shader_program_id;
+        other.shader_program_id = 0;
+    }
+    return *this;
+}
+
 void Shader::bind() const {
     glUseProgram(shader_program_id);
 }

@@ -14,6 +14,12 @@ class Shader {
 
     Shader(const std::string &vertex_source, const std::string &fragment_source);
 
+    Shader(const Shader &) = delete;
+    Shader &operator=(const Shader &) = delete;
+
+    Shader(Shader &&) noexcept;
+    Shader &operator=(Shader &&) noexcept;
+
     void bind() const;
     void unbind() const;
 
