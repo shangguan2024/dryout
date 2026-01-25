@@ -1,12 +1,18 @@
 #include "Shader.hpp"
 
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
 namespace dryout {
 
 Shader::Shader() : shader_program_id(0) {}
 
-Shader::~Shader() {}
+Shader::~Shader() {
+    if (shader_program_id) {
+        glDeleteProgram(shader_program_id);
+        shader_program_id = 0;
+    }
+}
 
 Shader::Shader(const std::string &vertex_source, const std::string &fragment_source)
     : shader_program_id(0) {
@@ -31,6 +37,7 @@ Shader::Shader(const std::string &vertex_source, const std::string &fragment_sou
     glAttachShader(shader_program_id, vertex_shader_id);
     glAttachShader(shader_program_id, fragment_shader_id);
     glLinkProgram(shader_program_id);
+    glValidateProgram(shader_program_id);
 
     GLint success;
     glGetProgramiv(shader_program_id, GL_LINK_STATUS, &success);
@@ -48,9 +55,41 @@ Shader::Shader(const std::string &vertex_source, const std::string &fragment_sou
     glDeleteShader(fragment_shader_id);
 }
 
-void Shader::bind() const {}
+void Shader::bind() const {
+    glUseProgram(shader_program_id);
+}
 
-void Shader::unbind() const {}
+void Shader::unbind() const {
+    glUseProgram(0);
+}
+
+void Shader::setInt(const std::string &name, int value) const {
+    GLint location = getUniformLocation(name);
+    if (location != -1) {
+        glUniform1i(location, value);
+    }
+}
+
+void Shader::setIntArray(const std::string &name, const int *values, int count) const {
+    GLint location = getUniformLocation(name);
+    if (location != -1) {
+        glUniform1iv(location, count, values);
+    }
+}
+
+void Shader::setFloat(const std::string &name, float value) const {
+    GLint location = getUniformLocation(name);
+    if (location != -1) {
+        glUniform1f(location, value);
+    }
+}
+
+void Shader::setMat4(const std::string &name, const glm::mat4 &value) const {
+    GLint location = getUniformLocation(name);
+    if (location != -1) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    }
+}
 
 GLuint Shader::compileShader(GLenum type, const std::string &shader) {
     GLuint shader_id = glCreateShader(type);
@@ -71,6 +110,14 @@ GLuint Shader::compileShader(GLenum type, const std::string &shader) {
     }
 
     return shader_id;
+}
+
+GLint Shader::getUniformLocation(const std::string &name) const {
+    GLint location = glGetUniformLocation(shader_program_id, name.c_str());
+    if (location == -1) {
+        std::cerr << "Error: Failed to find uniform location for " << name << std::endl;
+    }
+    return location;
 }
 
 } // namespace dryout
