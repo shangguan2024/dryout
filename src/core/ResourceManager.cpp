@@ -35,8 +35,6 @@ ResourceManager::ResourceManager() {
                frame_shader);
     std::cout << "Shaders loaded." << std::endl;
 
-    Renderer::init();
-
     std::cout << "Resource manager initialized." << std::endl;
 }
 

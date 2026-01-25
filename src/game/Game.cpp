@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include "ResourceManager.hpp"
+#include "Renderer.hpp"
 #include "Graphics.hpp"
 
 #include <SDL2/SDL.h>
@@ -43,8 +44,9 @@ Game::Game() {
 Game::~Game() {}
 
 void Game::init() {
-    Graphics *graphics = Graphics::getInstance();
-    ResourceManager *resource_manager = ResourceManager::getInstance();
+    Graphics::getInstance();
+    Renderer::init();
+    ResourceManager::getInstance();
 }
 
 } // namespace dryout
