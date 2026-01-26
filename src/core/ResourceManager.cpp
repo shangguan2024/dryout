@@ -75,7 +75,8 @@ void ResourceManager::loadTexture(const std::filesystem::path &path,
 }
 
 void ResourceManager::loadShader(const std::filesystem::path &path, const std::string &shader_name,
-                                 std::string &vert, std::string &frag, Shader &shader) {
+                                 std::string &vert, std::string &frag,
+                                 std::shared_ptr<Shader> &shader) {
     std::cout << "Loading shader " << shader_name << "..." << std::endl;
 
     auto parseShaderSource = [](const std::filesystem::path &path, std::string &source) -> void {
@@ -92,7 +93,7 @@ void ResourceManager::loadShader(const std::filesystem::path &path, const std::s
     parseShaderSource(path / (shader_name + ".vert"), vert);
     parseShaderSource(path / (shader_name + ".frag"), frag);
 
-    shader = std::move(Shader(vert, frag));
+    shader = std::make_shared<Shader>(vert, frag);
 
     std::cout << "Shader " << shader_name << " loaded." << std::endl;
 }
@@ -109,6 +110,16 @@ const json &ResourceManager::getTextureFrameInfo(TextureType type,
     default:
         std::cerr << "Error: Invalid texture type." << std::endl;
         return empty_json;
+    }
+}
+
+std::shared_ptr<Shader> ResourceManager::getShader(ShaderType type) const {
+    switch (type) {
+    case ShaderType::BASIC:
+        return frame_shader;
+    default:
+        std::cerr << "Error: Invalid shader type." << std::endl;
+        return nullptr;
     }
 }
 

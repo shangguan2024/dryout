@@ -31,7 +31,10 @@ void Game::run() {
             }
         }
 
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        Renderer::drawQuad();
 
         graphics->swapWindow();
     }
@@ -41,12 +44,15 @@ Game::Game() {
     init();
 }
 
-Game::~Game() {}
+Game::~Game() {
+    // TODO: Clean up resources
+    Renderer::shutdown();
+}
 
 void Game::init() {
     Graphics::getInstance();
-    Renderer::init();
-    ResourceManager::getInstance();
+    ResourceManager *resource_manager = ResourceManager::getInstance();
+    Renderer::init(resource_manager->getShader(ShaderType::BASIC));
 }
 
 } // namespace dryout

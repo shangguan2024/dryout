@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 #include <string>
 #include <filesystem>
+#include <memory>
 
 using json = nlohmann::json;
 
@@ -20,9 +21,16 @@ enum class TextureType : unsigned int {
     SPRITE_ATLAS,
 };
 
+enum class ShaderType : unsigned int {
+    NONE = 0,
+    BASIC,
+};
+
 class ResourceManager {
   public:
     static ResourceManager *getInstance();
+
+    std::shared_ptr<Shader> getShader(ShaderType type) const;
 
   private:
     ResourceManager();
@@ -36,7 +44,7 @@ class ResourceManager {
     void loadTexture(const std::filesystem::path &path, const std::string &texture_name, json &j,
                      Texture &texture);
     void loadShader(const std::filesystem::path &path, const std::string &shader_name,
-                    std::string &vert, std::string &frag, Shader &shader);
+                    std::string &vert, std::string &frag, std::shared_ptr<Shader> &shader);
 
     const json &getTextureFrameInfo(TextureType type, const std::string &texture_name) const;
 
@@ -44,7 +52,7 @@ class ResourceManager {
     json ui_atlas, tileset_atlas, sprite_atlas;
     Texture ui_atlas_texture, tileset_atlas_texture, sprite_atlas_texture;
     std::string frame_vertex_shader, frame_fragment_shader;
-    Shader frame_shader;
+    std::shared_ptr<Shader> frame_shader;
 };
 
 } // namespace dryout
