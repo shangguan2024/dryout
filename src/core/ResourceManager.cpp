@@ -50,7 +50,8 @@ ResourceManager *ResourceManager::getInstance() {
 }
 
 void ResourceManager::loadTexture(const std::filesystem::path &path,
-                                  const std::string &texture_name, json &j, Texture &texture) {
+                                  const std::string &texture_name, json &j,
+                                  std::shared_ptr<Texture> &texture) {
     std::cout << "Loading texture " << (path / (texture_name + ".png")).string() << "..."
               << std::endl;
 
@@ -59,7 +60,7 @@ void ResourceManager::loadTexture(const std::filesystem::path &path,
         std::cerr << "Failed to load texture atlas! SDL_Error: " << SDL_GetError() << std::endl;
         return;
     }
-    texture = Texture(surface);
+    texture = std::make_shared<Texture>(surface);
     SDL_FreeSurface(surface);
 
     std::ifstream json_file(path / (texture_name + ".json"));

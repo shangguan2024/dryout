@@ -42,7 +42,7 @@ class ResourceManager {
     ResourceManager &operator=(ResourceManager &&) = delete;
 
     void loadTexture(const std::filesystem::path &path, const std::string &texture_name, json &j,
-                     Texture &texture);
+                     std::shared_ptr<Texture> &texture);
     void loadShader(const std::filesystem::path &path, const std::string &shader_name,
                     std::string &vert, std::string &frag, std::shared_ptr<Shader> &shader);
 
@@ -50,7 +50,7 @@ class ResourceManager {
 
     static ResourceManager *instance;
     json ui_atlas, tileset_atlas, sprite_atlas;
-    Texture ui_atlas_texture, tileset_atlas_texture, sprite_atlas_texture;
+    std::shared_ptr<Texture> ui_atlas_texture, tileset_atlas_texture, sprite_atlas_texture;
     std::string frame_vertex_shader, frame_fragment_shader;
     std::shared_ptr<Shader> frame_shader;
 };
