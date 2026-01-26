@@ -45,6 +45,33 @@ Texture::Texture(const SDL_Surface *surface) : texture_id(0), width(0), height(0
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+Texture::Texture(Texture &&other) noexcept
+    : texture_id(other.texture_id), width(other.width), height(other.height),
+      channels(other.channels) {
+    other.texture_id = 0;
+    other.width = 0;
+    other.height = 0;
+    other.channels = 0;
+}
+
+Texture &Texture::operator=(Texture &&other) noexcept {
+    if (this != &other) {
+        if (texture_id) {
+            glDeleteTextures(1, &texture_id);
+        }
+        texture_id = other.texture_id;
+        width = other.width;
+        height = other.height;
+        channels = other.channels;
+
+        other.texture_id = 0;
+        other.width = 0;
+        other.height = 0;
+        other.channels = 0;
+    }
+    return *this;
+}
+
 void Texture::bind(GLuint slot) const {
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, texture_id);
