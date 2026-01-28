@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <memory>
 #include <iostream>
+#include <string>
 
 namespace dryout {
 
@@ -14,30 +15,66 @@ struct QuadVertex {
     float tex_index;
 };
 
+static std::string s_default_vertex_shader = R"(
+#version 330 core
+
+layout(location = 0) in vec3 a_Position;
+layout(location = 1) in vec4 a_Color;
+layout(location = 2) in vec2 a_TexCoord;
+layout(location = 3) in float a_TexIndex;
+
+out vec2 v_TexCoord;
+out vec4 v_Color;
+out float v_TexIndex;
+
+uniform mat4 u_ViewProjectionMatrix;
+
+void main() {
+    gl_Position = u_ViewProjectionMatrix * vec4(a_Position, 1.0);
+    v_TexCoord = a_TexCoord;
+    v_Color = a_Color;
+    v_TexIndex = a_TexIndex;
+}
+)";
+static std::string s_default_fragment_shader = R"(
+#version 330 core
+
+layout(location = 0) out vec4 o_Color;
+
+in vec2 v_TexCoord;
+in vec4 v_Color;
+in float v_TexIndex;
+
+uniform sampler2D u_Textures[32];
+
+void main() {
+    vec4 texColor = v_Color;
+
+    int index = int(v_TexIndex);
+    texColor *= texture(u_Textures[index], v_TexCoord);
+
+    if (texColor.a < 0.1) {
+        discard;
+    }
+    o_Color = texColor;
+}
+)";
+
 static std::shared_ptr<Shader> s_shader;
 static GLuint s_default_texture;
 static GLuint s_vbo;
 static GLuint s_ebo;
 static GLuint s_vao;
 
-int Renderer::texture_slots_count = 0;
-std::array<int, Renderer::maximum_texture_slots> Renderer::texture_slots = {-1};
-
-void Renderer::init(std::shared_ptr<Shader> shader) {
+void Renderer::init() {
     std::cout << "Initializing renderer..." << std::endl;
-
-    // Get the maximum number of texture units supported by the GPU
-    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &texture_slots_count);
-    if (texture_slots_count > maximum_texture_slots) {
-        texture_slots_count = maximum_texture_slots;
-    }
 
     // Enable blending for transparent textures
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Set the shader to be used by the renderer
-    s_shader = shader;
+    s_shader = std::make_shared<Shader>(s_default_vertex_shader, s_default_fragment_shader);
 
     // Initialize shader
     s_shader->bind();
@@ -53,8 +90,6 @@ void Renderer::init(std::shared_ptr<Shader> shader) {
     // Bind white texture to slot 0
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, s_default_texture);
-    texture_slots[0] = s_default_texture;
-    texture_slots_count = 1;
 
     // Set default ViewProjectionMatrix (Identity)
     s_shader->setMat4("u_ViewProjectionMatrix", glm::mat4(1.0f));
@@ -69,10 +104,10 @@ void Renderer::init(std::shared_ptr<Shader> shader) {
     // Create the quad vertices and indices
     QuadVertex vertices[] = {
         // position             color                     tex_coord    tex_index
-        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, 0.0f},
-        {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, 0.0f},
-        {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {1.0f, 1.0f}, 0.0f},
-        {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, 0.0f},
+        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, 1.0f},
+        {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, 1.0f},
+        {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {1.0f, 1.0f}, 1.0f},
+        {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, 1.0f},
     };
     unsigned int indices[] = {
         0, 1, 2, // First triangle
