@@ -106,18 +106,6 @@ void Renderer::init() {
     // Initialize shader
     s_shader->bind();
 
-    // Create 1x1 white texture
-    GLuint default_texture;
-    glGenTextures(1, &default_texture);
-    glBindTexture(GL_TEXTURE_2D, default_texture);
-    unsigned int white_data = 0xffffffff;
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &white_data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Bind white texture
-    int texture_slot = bindTextureSlot(default_texture);
-
     // Set default ViewProjectionMatrix (Identity)
     s_shader->setMat4("u_ViewProjectionMatrix", glm::mat4(1.0f));
 
