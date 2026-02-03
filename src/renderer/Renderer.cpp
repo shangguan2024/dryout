@@ -9,11 +9,32 @@
 namespace dryout {
 
 struct QuadVertex {
+    QuadVertex() {}
+    QuadVertex(const glm::vec3 &position, const glm::vec4 &color, const glm::vec2 &tex_coord,
+               float tex_index)
+        : position(position), color(color), tex_coord(tex_coord), tex_index(tex_index) {}
+    QuadVertex(float x, float y, float z, float r, float g, float b, float a, float s, float t,
+               float tex_index)
+        : position(x, y, z), color(r, g, b, a), tex_coord(s, t), tex_index(tex_index) {}
     glm::vec3 position;
     glm::vec4 color;
     glm::vec2 tex_coord;
     float tex_index;
 };
+
+static const int s_max_quad_count = 10'000;
+static const int s_max_vertex_count = s_max_quad_count * 4;
+static const int s_max_index_count = s_max_quad_count * 6;
+
+static QuadVertex s_quad_vertices[s_max_vertex_count];
+static unsigned int s_quad_indices[s_max_index_count];
+static int s_quad_count = 0;
+static int s_vertex_count = 0;
+static int s_index_count = 0;
+
+static const int s_max_tex_slot_count = 32;
+static int s_tex_slot_count;
+static int s_tex_slots[s_max_tex_slot_count];
 
 static std::string s_default_vertex_shader = R"(
 #version 330 core
@@ -61,13 +82,19 @@ void main() {
 )";
 
 static std::shared_ptr<Shader> s_shader;
-static GLuint s_default_texture;
 static GLuint s_vbo;
 static GLuint s_ebo;
 static GLuint s_vao;
 
 void Renderer::init() {
     std::cout << "Initializing renderer..." << std::endl;
+
+    // Get the maximum number of texture units supported by the GPU
+    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &s_tex_slot_count);
+    if (s_tex_slot_count > s_max_tex_slot_count) {
+        s_tex_slot_count = s_max_tex_slot_count;
+    }
+    resetTextureSlots();
 
     // Enable blending for transparent textures
     glEnable(GL_BLEND);
@@ -80,16 +107,16 @@ void Renderer::init() {
     s_shader->bind();
 
     // Create 1x1 white texture
-    glGenTextures(1, &s_default_texture);
-    glBindTexture(GL_TEXTURE_2D, s_default_texture);
+    GLuint default_texture;
+    glGenTextures(1, &default_texture);
+    glBindTexture(GL_TEXTURE_2D, default_texture);
     unsigned int white_data = 0xffffffff;
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &white_data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Bind white texture to slot 0
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, s_default_texture);
+    // Bind white texture
+    int texture_slot = bindTextureSlot(default_texture);
 
     // Set default ViewProjectionMatrix (Identity)
     s_shader->setMat4("u_ViewProjectionMatrix", glm::mat4(1.0f));
@@ -101,35 +128,19 @@ void Renderer::init() {
     }
     s_shader->setIntArray("u_Textures", samplers, 32);
 
-    // Create the quad vertices and indices
-    QuadVertex vertices[] = {
-        // position             color                     tex_coord    tex_index
-        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, 1.0f},
-        {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, 1.0f},
-        {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {1.0f, 1.0f}, 1.0f},
-        {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, 1.0f},
-    };
-    unsigned int indices[] = {
-        0, 1, 2, // First triangle
-        2, 3, 0  // Second triangle
-    };
-
     // Create and bind the vertex buffer object (VBO)
     glGenBuffers(1, &s_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, s_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(s_quad_vertices), s_quad_vertices, GL_STATIC_DRAW);
 
     // Create and bind the element buffer object (EBO)
     glGenBuffers(1, &s_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(s_quad_indices), s_quad_indices, GL_STATIC_DRAW);
 
     // Create and bind the vertex array object (VAO)
     glGenVertexArrays(1, &s_vao);
     glBindVertexArray(s_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, s_vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
                           (void *)offsetof(QuadVertex, position));
     glEnableVertexAttribArray(0);
@@ -144,8 +155,11 @@ void Renderer::init() {
     glEnableVertexAttribArray(3);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_ebo);
 
+    // Unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -159,10 +173,143 @@ void Renderer::shutdown() {
     // todo
 }
 
-void Renderer::drawQuad() {
+void Renderer::setShader(const std::shared_ptr<Shader> &shader) {
+    s_shader = shader;
+}
+
+void Renderer::beginScene(const glm::mat4 &view_projection_matrix) {
+    s_quad_count = 0;
+    s_vertex_count = 0;
+    s_index_count = 0;
+    s_shader->bind();
+    s_shader->setMat4("u_ViewProjectionMatrix", view_projection_matrix);
+}
+
+void Renderer::endScene() {
+    flush();
+}
+
+void Renderer::flush() {
+    if (s_quad_count == 0 || s_vertex_count == 0 || s_index_count == 0) {
+        std::cerr << "No quad to flush." << std::endl;
+        return;
+    }
+    std::cout << "Flushing " << s_quad_count << " quads." << std::endl;
+    std::cout << "Vertex count: " << s_vertex_count << std::endl;
+    std::cout << "Index count: " << s_index_count << std::endl;
+
     s_shader->bind();
     glBindVertexArray(s_vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, s_vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, s_vertex_count * sizeof(QuadVertex), s_quad_vertices);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_ebo);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, s_index_count * sizeof(unsigned int),
+                    s_quad_indices);
+
+    glDrawElements(GL_TRIANGLES, s_index_count, GL_UNSIGNED_INT, nullptr);
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    s_quad_count = 0;
+    s_vertex_count = 0;
+    s_index_count = 0;
+}
+
+void Renderer::drawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color,
+                        const glm::vec2 &texture_coords, const glm::vec2 &texture_size,
+                        const std::shared_ptr<Texture> &texture, const glm::vec4 &tint_color) {
+    if (s_quad_count >= s_max_quad_count) {
+        flush();
+    }
+
+    // Get the texture ID and bind it to a texture slot
+    GLuint texture_id = texture->getTextureID();
+    int texture_slot = getTextureSlot(texture_id);
+    if (texture_slot == -1) {
+        texture_slot = bindTextureSlot(texture_id);
+    }
+    if (texture_slot == -1) {
+        flush();
+        resetTextureSlots();
+        texture_slot = bindTextureSlot(texture_id);
+    }
+    std::cout << "Texture slot: " << texture_slot << std::endl;
+
+    // Add the quad vertices to the buffer
+    s_quad_vertices[s_vertex_count++] =
+        QuadVertex({position.x, position.y, 0.0f}, color, texture_coords, texture_slot);
+    s_quad_vertices[s_vertex_count++] =
+        QuadVertex({position.x + size.x, position.y, 0.0f}, color,
+                   {texture_coords.x + texture_size.x, texture_coords.y}, texture_slot);
+    s_quad_vertices[s_vertex_count++] = QuadVertex(
+        {position.x + size.x, position.y + size.y, 0.0f}, color,
+        {texture_coords.x + texture_size.x, texture_coords.y + texture_size.y}, texture_slot);
+    s_quad_vertices[s_vertex_count++] =
+        QuadVertex({position.x, position.y + size.y, 0.0f}, color,
+                   {texture_coords.x, texture_coords.y + texture_size.y}, texture_slot);
+
+    // Add the quad indices to the buffer
+    s_quad_indices[s_index_count++] = s_vertex_count - 4;
+    s_quad_indices[s_index_count++] = s_vertex_count - 3;
+    s_quad_indices[s_index_count++] = s_vertex_count - 2;
+    s_quad_indices[s_index_count++] = s_vertex_count - 2;
+    s_quad_indices[s_index_count++] = s_vertex_count - 1;
+    s_quad_indices[s_index_count++] = s_vertex_count - 4;
+
+    s_quad_count++;
+}
+
+void Renderer::resetTextureSlots() {
+    for (int i = 0; i < s_tex_slot_count; i++) {
+        s_tex_slots[i] = 0;
+    }
+}
+
+int Renderer::getTextureSlot(GLuint texture_id) {
+    for (int i = 0; i < s_tex_slot_count; i++) {
+        if (s_tex_slots[i] == texture_id) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int Renderer::getTextureSlot(std::shared_ptr<Texture> texture) {
+    GLuint texture_id = texture->getTextureID();
+    for (int i = 0; i < s_tex_slot_count; i++) {
+        if (s_tex_slots[i] == texture_id) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int Renderer::bindTextureSlot(GLuint texture_id) {
+    for (int i = 0; i < s_tex_slot_count; i++) {
+        if (s_tex_slots[i] == 0) {
+            s_tex_slots[i] = texture_id;
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+            return i;
+        }
+    }
+    return -1;
+}
+
+int Renderer::bindTextureSlot(std::shared_ptr<Texture> texture) {
+    GLuint texture_id = texture->getTextureID();
+    for (int i = 0; i < s_tex_slot_count; i++) {
+        if (s_tex_slots[i] == 0) {
+            s_tex_slots[i] = texture_id;
+            texture->bind(i);
+            return i;
+        }
+    }
+    return -1;
 }
 
 } // namespace dryout

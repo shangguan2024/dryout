@@ -124,4 +124,18 @@ std::shared_ptr<Shader> ResourceManager::getShader(ShaderType type) const {
     }
 }
 
+std::shared_ptr<Texture> ResourceManager::getTexture(TextureType type) const {
+    switch (type) {
+    case TextureType::UI_ATLAS:
+        return ui_atlas_texture;
+    case TextureType::TILESET_ATLAS:
+        return tileset_atlas_texture;
+    case TextureType::SPRITE_ATLAS:
+        return sprite_atlas_texture;
+    default:
+        std::cerr << "Error: Invalid texture type." << std::endl;
+        return nullptr;
+    }
+}
+
 } // namespace dryout

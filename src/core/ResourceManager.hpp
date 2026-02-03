@@ -30,6 +30,7 @@ class ResourceManager {
   public:
     static ResourceManager *getInstance();
 
+    std::shared_ptr<Texture> getTexture(TextureType type) const;
     std::shared_ptr<Shader> getShader(ShaderType type) const;
 
   private:
