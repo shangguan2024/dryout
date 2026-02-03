@@ -22,7 +22,7 @@ struct QuadVertex {
     float tex_index;
 };
 
-static const int s_max_quad_count = 10'000;
+static const int s_max_quad_count = 100'000;
 static const int s_max_vertex_count = s_max_quad_count * 4;
 static const int s_max_index_count = s_max_quad_count * 6;
 
@@ -34,7 +34,7 @@ static int s_index_count = 0;
 
 static const int s_max_tex_slot_count = 32;
 static int s_tex_slot_count;
-static int s_tex_slots[s_max_tex_slot_count];
+static GLuint s_tex_slots[s_max_tex_slot_count];
 
 static std::string s_default_vertex_shader = R"(
 #version 330 core
@@ -146,7 +146,6 @@ void Renderer::init() {
     // Unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     GLenum error = glGetError();
@@ -158,7 +157,22 @@ void Renderer::init() {
 }
 
 void Renderer::shutdown() {
-    // todo
+    if (s_vao) {
+        glDeleteVertexArrays(1, &s_vao);
+    }
+    if (s_vbo) {
+        glDeleteBuffers(1, &s_vbo);
+    }
+    if (s_ebo) {
+        glDeleteBuffers(1, &s_ebo);
+    }
+    s_vao = 0;
+    s_vbo = 0;
+    s_ebo = 0;
+    s_quad_count = 0;
+    s_vertex_count = 0;
+    s_index_count = 0;
+    resetTextureSlots();
 }
 
 void Renderer::setShader(const std::shared_ptr<Shader> &shader) {
@@ -178,13 +192,10 @@ void Renderer::endScene() {
 }
 
 void Renderer::flush() {
-    if (s_quad_count == 0 || s_vertex_count == 0 || s_index_count == 0) {
+    if (s_quad_count == 0) {
         std::cerr << "No quad to flush." << std::endl;
         return;
     }
-    std::cout << "Flushing " << s_quad_count << " quads." << std::endl;
-    std::cout << "Vertex count: " << s_vertex_count << std::endl;
-    std::cout << "Index count: " << s_index_count << std::endl;
 
     s_shader->bind();
     glBindVertexArray(s_vao);
@@ -225,7 +236,6 @@ void Renderer::drawQuad(const glm::vec2 &position, const glm::vec2 &size, const 
         resetTextureSlots();
         texture_slot = bindTextureSlot(texture_id);
     }
-    std::cout << "Texture slot: " << texture_slot << std::endl;
 
     // Add the quad vertices to the buffer
     s_quad_vertices[s_vertex_count++] =
@@ -253,7 +263,11 @@ void Renderer::drawQuad(const glm::vec2 &position, const glm::vec2 &size, const 
 
 void Renderer::resetTextureSlots() {
     for (int i = 0; i < s_tex_slot_count; i++) {
-        s_tex_slots[i] = 0;
+        if (s_tex_slots[i] != -1) {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+        s_tex_slots[i] = -1;
     }
 }
 
@@ -278,7 +292,7 @@ int Renderer::getTextureSlot(std::shared_ptr<Texture> texture) {
 
 int Renderer::bindTextureSlot(GLuint texture_id) {
     for (int i = 0; i < s_tex_slot_count; i++) {
-        if (s_tex_slots[i] == 0) {
+        if (s_tex_slots[i] == -1) {
             s_tex_slots[i] = texture_id;
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -291,7 +305,7 @@ int Renderer::bindTextureSlot(GLuint texture_id) {
 int Renderer::bindTextureSlot(std::shared_ptr<Texture> texture) {
     GLuint texture_id = texture->getTextureID();
     for (int i = 0; i < s_tex_slot_count; i++) {
-        if (s_tex_slots[i] == 0) {
+        if (s_tex_slots[i] == -1) {
             s_tex_slots[i] = texture_id;
             texture->bind(i);
             return i;
