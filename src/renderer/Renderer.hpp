@@ -20,9 +20,8 @@ class Renderer {
     static void endScene();
 
     static void drawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color,
-                         const glm::vec2 &texture_coords, const glm::vec2 &texture_size,
-                         const std::shared_ptr<Texture> &texture,
-                         const glm::vec4 &tint_color = glm::vec4(1.0f));
+                         const std::shared_ptr<Texture> &texture, const glm::vec2 &texture_coords,
+                         const glm::vec2 &texture_size);
 
   private:
     static void flush();

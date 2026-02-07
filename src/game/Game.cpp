@@ -2,9 +2,15 @@
 #include "ResourceManager.hpp"
 #include "Renderer.hpp"
 #include "Graphics.hpp"
+#include "Sprite.hpp"
 
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+#include <iostream>
 
 namespace dryout {
 
@@ -22,11 +28,15 @@ void Game::run() {
     Graphics *graphics = Graphics::getInstance();
     ResourceManager *resource_manager = ResourceManager::getInstance();
 
+    glm::mat4 view_matrix = glm::mat4(1.0f);
+    glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
     std::shared_ptr<Texture> texture = resource_manager->getTexture(TextureType::SPRITE_ATLAS);
+    Sprite sprite(texture, glm::vec2(0.0f), glm::vec2(0.25f), glm::vec2(0.5f));
 
     bool running = true;
     SDL_Event event;
 
+    float delta = 0.999;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -37,11 +47,18 @@ void Game::run() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        Renderer::drawQuad(glm::vec2(0.0f), glm::vec2(1.0f), glm::vec4(1.0f), glm::vec2(0.0f),
-                           glm::vec2(1.0f), texture, glm::vec4(1.0f));
-        Renderer::drawQuad(glm::vec2(0.0f), glm::vec2(-1.0f), glm::vec4(1.0f), glm::vec2(0.0f),
-                           glm::vec2(1.0f), texture, glm::vec4(1.0f));
+        view_matrix = glm::lookAt(glm::vec3(0.0f, -3.0f, 3.0f * delta), glm::vec3(0.0f, 0.0f, 0.0f),
+                                  glm::vec3(0.0f, 1.0f, 0.0f));
+        // std::cout << glm::to_string(view_matrix) << std::endl;
+        glm::mat4 view_projection_matrix = projection_matrix * view_matrix;
+
+        Renderer::beginScene(view_projection_matrix);
+        sprite.render(glm::vec2(0.25f));
+        Renderer::drawQuad(glm::vec2(0.0f), glm::vec2(-1.0f), glm::vec4(1.0f), texture,
+                           glm::vec2(0.0f), glm::vec2(1.0f));
         Renderer::endScene();
+
+        delta *= 0.999;
 
         graphics->swapWindow();
 

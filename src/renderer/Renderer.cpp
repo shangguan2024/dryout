@@ -219,8 +219,8 @@ void Renderer::flush() {
 }
 
 void Renderer::drawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color,
-                        const glm::vec2 &texture_coords, const glm::vec2 &texture_size,
-                        const std::shared_ptr<Texture> &texture, const glm::vec4 &tint_color) {
+                        const std::shared_ptr<Texture> &texture, const glm::vec2 &texture_coords,
+                        const glm::vec2 &texture_size) {
     if (s_quad_count >= s_max_quad_count) {
         flush();
     }
