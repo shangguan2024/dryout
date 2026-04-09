@@ -12,7 +12,7 @@ class Graphics {
   public:
     static Graphics *getInstance();
 
-    glm::vec2 getWindowSize();
+    SDL_Window *getWindow();
     void swapWindow();
 
   private:
