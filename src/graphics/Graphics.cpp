@@ -17,6 +17,12 @@ Graphics *Graphics::getInstance() {
     return instance;
 }
 
+glm::vec2 Graphics::getWindowSize() {
+    int width, height;
+    SDL_GL_GetDrawableSize(window, &width, &height);
+    return glm::vec2(width, height);
+}
+
 void Graphics::swapWindow() {
     SDL_GL_SwapWindow(window);
 }

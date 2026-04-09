@@ -16,7 +16,7 @@ class Renderer {
 
     static void setShader(const std::shared_ptr<Shader> &shader);
 
-    static void beginScene(const glm::mat4 &view_projection_matrix);
+    static void beginScene(const glm::mat4 &view_projection_matrix, const glm::vec2 &resolution);
     static void endScene();
 
     static void drawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color,

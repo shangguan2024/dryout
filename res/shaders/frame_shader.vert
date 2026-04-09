@@ -16,9 +16,11 @@ out vec4 v_Color;
 out float v_TexIndex;
 
 uniform mat4 u_ViewProjectionMatrix;
+uniform vec2 u_Resolution;
 
 void main() {
-    gl_Position = u_ViewProjectionMatrix * vec4(a_Position, 1.0);
+    vec2 NormalizedPos = a_Position.xy / u_Resolution;
+    gl_Position = u_ViewProjectionMatrix * vec4(NormalizedPos, a_Position.z, 1.0);
     v_TexCoord = a_TexCoord;
     v_Color = a_Color;
     v_TexIndex = a_TexIndex;

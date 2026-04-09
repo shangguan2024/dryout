@@ -28,6 +28,7 @@ class Shader {
     void setIntArray(const std::string &name, const int *values, int count) const;
     void setFloat(const std::string &name, float value) const;
     void setMat4(const std::string &name, const glm::mat4 &value) const;
+    void setVec2(const std::string &name, const glm::vec2 &value) const;
 
   private:
     GLuint compileShader(GLenum type, const std::string &shader);

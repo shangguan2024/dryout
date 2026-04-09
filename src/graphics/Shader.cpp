@@ -106,6 +106,13 @@ void Shader::setMat4(const std::string &name, const glm::mat4 &value) const {
     }
 }
 
+void Shader::setVec2(const std::string &name, const glm::vec2 &value) const {
+    GLint location = getUniformLocation(name);
+    if (location != -1) {
+        glUniform2fv(location, 1, glm::value_ptr(value));
+    }
+}
+
 GLuint Shader::compileShader(GLenum type, const std::string &shader) {
     GLuint shader_id = glCreateShader(type);
     const char *shader_source = shader.c_str();

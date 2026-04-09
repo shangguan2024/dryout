@@ -3,6 +3,7 @@
 
 #include <glad/glad.h>
 #include <SDL2/SDL.h>
+#include <glm/glm.hpp>
 #include <string>
 
 namespace dryout {
@@ -11,6 +12,7 @@ class Graphics {
   public:
     static Graphics *getInstance();
 
+    glm::vec2 getWindowSize();
     void swapWindow();
 
   private:
