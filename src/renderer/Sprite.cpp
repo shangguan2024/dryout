@@ -12,7 +12,8 @@ Sprite::~Sprite() {}
 void Sprite::render(const glm::vec2 &position, const glm::vec4 &color, const glm::vec2 &scale,
                     float rotation) {
     // todo : rotation
-    Renderer::drawQuad(position, size * scale, color, texture, tex_coord, tex_size);
+    Renderer::drawQuad(position - size * scale / 2.0f, size * scale, color, texture, tex_coord,
+                       tex_size);
 }
 
 } // namespace dryout

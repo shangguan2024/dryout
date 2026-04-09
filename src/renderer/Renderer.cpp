@@ -238,17 +238,18 @@ void Renderer::drawQuad(const glm::vec2 &position, const glm::vec2 &size, const 
     }
 
     // Add the quad vertices to the buffer
+    const auto &p = position;
+    const auto &s = size;
+    const auto &t_c = texture_coords;
+    const auto &t_s = texture_size;
     s_quad_vertices[s_vertex_count++] =
-        QuadVertex({position.x, position.y, 0.0f}, color, texture_coords, texture_slot);
+        QuadVertex({p.x + s.x, p.y, 0.0f}, color, {t_c.x + t_s.x, t_c.y + t_s.y}, texture_slot);
     s_quad_vertices[s_vertex_count++] =
-        QuadVertex({position.x + size.x, position.y, 0.0f}, color,
-                   {texture_coords.x + texture_size.x, texture_coords.y}, texture_slot);
-    s_quad_vertices[s_vertex_count++] = QuadVertex(
-        {position.x + size.x, position.y + size.y, 0.0f}, color,
-        {texture_coords.x + texture_size.x, texture_coords.y + texture_size.y}, texture_slot);
+        QuadVertex({p.x, p.y, 0.0f}, color, {t_c.x, t_c.y + t_s.y}, texture_slot);
     s_quad_vertices[s_vertex_count++] =
-        QuadVertex({position.x, position.y + size.y, 0.0f}, color,
-                   {texture_coords.x, texture_coords.y + texture_size.y}, texture_slot);
+        QuadVertex({p.x, p.y + s.y, 0.0f}, color, t_c, texture_slot);
+    s_quad_vertices[s_vertex_count++] =
+        QuadVertex({p.x + s.x, p.y + s.y, 0.0f}, color, {t_c.x + t_s.x, t_c.y}, texture_slot);
 
     // Add the quad indices to the buffer
     s_quad_indices[s_index_count++] = s_vertex_count - 4;
