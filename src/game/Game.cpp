@@ -4,6 +4,7 @@
 #include "Renderer.hpp"
 #include "Graphics.hpp"
 #include "Sprite.hpp"
+#include "GameMap.hpp"
 
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
@@ -39,8 +40,7 @@ void Game::run() {
     std::shared_ptr<Texture> texture = resource_manager->getTexture(TextureType::SPRITE_ATLAS);
     auto sprite =
         resource_manager->getSprite(TextureType::SPRITE_ATLAS, "player", glm::vec2(10.0f));
-    auto sprite2 =
-        resource_manager->getSprite(TextureType::TILESET_ATLAS, "sand", glm::vec2(10.0f));
+    GameMap game_map(63, 63);
 
     bool running = true;
     SDL_Event event;
@@ -72,9 +72,8 @@ void Game::run() {
         glm::mat4 view_projection_matrix = projection_matrix * view_matrix;
 
         Renderer::beginScene(view_projection_matrix);
-        sprite->render(glm::vec2(4.0f), 1.0f);
-        sprite->render(glm::vec2(-4.0f), -1.0f);
-        sprite2->render(glm::vec2(0.0f));
+        sprite->render(position, 0.1f);
+        game_map.render(position);
         Renderer::endScene();
 
         if (input_manager->isKeyDown(KeyCode::W)) {
@@ -85,6 +84,7 @@ void Game::run() {
             coef /= 0.95f;
             std::cout << "S key pressed, coef: " << coef << std::endl;
         }
+        coef = std::clamp(coef, 0.1f, 10.0f);
         if (input_manager->isKeyDown(KeyCode::LEFT)) {
             position.x -= velocity * delta;
         }
