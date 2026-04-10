@@ -5,6 +5,7 @@
 #include "Graphics.hpp"
 #include "Sprite.hpp"
 #include "GameMap.hpp"
+#include "Player.hpp"
 
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
@@ -38,8 +39,7 @@ void Game::run() {
     glm::mat4 view_matrix = glm::mat4(1.0f);
     glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 1000.0f);
     std::shared_ptr<Texture> texture = resource_manager->getTexture(TextureType::SPRITE_ATLAS);
-    auto sprite =
-        resource_manager->getSprite(TextureType::SPRITE_ATLAS, "player", glm::vec2(10.0f));
+    Player player;
     GameMap game_map(63, 63);
 
     bool running = true;
@@ -72,34 +72,20 @@ void Game::run() {
         glm::mat4 view_projection_matrix = projection_matrix * view_matrix;
 
         Renderer::beginScene(view_projection_matrix);
-        sprite->render(position, 0.1f);
+        player.render();
         game_map.render(position);
         Renderer::endScene();
 
-        if (input_manager->isKeyDown(KeyCode::W)) {
+        if (input_manager->isKeyDown(KeyCode::Z)) {
             coef *= 0.95f;
-            std::cout << "W key pressed, coef: " << coef << std::endl;
         }
-        if (input_manager->isKeyDown(KeyCode::S)) {
+        if (input_manager->isKeyDown(KeyCode::X)) {
             coef /= 0.95f;
-            std::cout << "S key pressed, coef: " << coef << std::endl;
         }
         coef = std::clamp(coef, 0.1f, 10.0f);
-        if (input_manager->isKeyDown(KeyCode::LEFT)) {
-            position.x -= velocity * delta;
-        }
-        if (input_manager->isKeyDown(KeyCode::RIGHT)) {
-            position.x += velocity * delta;
-        }
-        if (input_manager->isKeyDown(KeyCode::UP)) {
-            position.y += velocity * delta;
-        }
-        if (input_manager->isKeyDown(KeyCode::DOWN)) {
-            position.y -= velocity * delta;
-        }
-        if (input_manager->isKeyDown(KeyCode::ESC)) {
-            running = false;
-        }
+        player.update(delta);
+        position = player.getPosition();
+        std::cout << "Player position: " << glm::to_string(position) << std::endl;
 
         graphics->swapWindow();
 
