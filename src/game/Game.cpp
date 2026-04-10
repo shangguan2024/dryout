@@ -76,6 +76,9 @@ void Game::run() {
         game_map.render(position);
         Renderer::endScene();
 
+        if (input_manager->isKeyDown(KeyCode::ESC)) {
+            running = false;
+        }
         if (input_manager->isKeyDown(KeyCode::Z)) {
             coef *= 0.95f;
         }

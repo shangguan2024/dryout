@@ -9,9 +9,12 @@
 
 namespace dryout {
 
+constexpr float g_tile_size = 10.0f;
+
 enum class TileType : unsigned int {
     UNKNOWN = 0,
     SAND,
+    WET_SAND,
     COUNT,
 };
 

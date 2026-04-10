@@ -16,7 +16,9 @@ TileFlyweight::TileFlyweight() {
 
     flyweight[static_cast<unsigned int>(TileType::UNKNOWN)] = nullptr;
     flyweight[static_cast<unsigned int>(TileType::SAND)] =
-        resource_manager->getSprite(TextureType::TILESET_ATLAS, "sand", glm::vec2(10.0f));
+        resource_manager->getSprite(TextureType::TILESET_ATLAS, "sand", glm::vec2(g_tile_size));
+    flyweight[static_cast<unsigned int>(TileType::WET_SAND)] =
+        resource_manager->getSprite(TextureType::TILESET_ATLAS, "wet_sand", glm::vec2(g_tile_size));
 }
 
 TileFlyweight *TileFlyweight::getInstance() {
