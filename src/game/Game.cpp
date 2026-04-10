@@ -37,7 +37,10 @@ void Game::run() {
     glm::mat4 view_matrix = glm::mat4(1.0f);
     glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 1000.0f);
     std::shared_ptr<Texture> texture = resource_manager->getTexture(TextureType::SPRITE_ATLAS);
-    Sprite sprite(texture, glm::vec2(0.0f), glm::vec2(0.25f), glm::vec2(10.0f));
+    auto sprite =
+        resource_manager->getSprite(TextureType::SPRITE_ATLAS, "player", glm::vec2(10.0f));
+    auto sprite2 =
+        resource_manager->getSprite(TextureType::TILESET_ATLAS, "sand", glm::vec2(10.0f));
 
     bool running = true;
     SDL_Event event;
@@ -62,17 +65,16 @@ void Game::run() {
         }
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         view_matrix = glm::lookAt(glm::vec3(position, 100.0f * coef), glm::vec3(position, 0.0f),
                                   glm::vec3(0.0f, 1.0f, 0.0f));
-        // std::cout << glm::to_string(view_matrix) << std::endl;
         glm::mat4 view_projection_matrix = projection_matrix * view_matrix;
 
         Renderer::beginScene(view_projection_matrix);
-        sprite.render(glm::vec2(0.0f));
-        // Renderer::drawQuad(glm::vec2(0.0f), glm::vec2(-10.0f), glm::vec4(1.0f), texture,
-        //                    glm::vec2(0.0f), glm::vec2(1.0f));
+        sprite->render(glm::vec2(4.0f), 1.0f);
+        sprite->render(glm::vec2(-4.0f), -1.0f);
+        sprite2->render(glm::vec2(0.0f));
         Renderer::endScene();
 
         if (input_manager->isKeyDown(KeyCode::W)) {

@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <filesystem>
 
 using json = nlohmann::json;
@@ -122,6 +123,46 @@ std::shared_ptr<Shader> ResourceManager::getShader(ShaderType type) const {
         std::cerr << "Error: Invalid shader type." << std::endl;
         return nullptr;
     }
+}
+
+std::unique_ptr<Sprite> ResourceManager::getSprite(TextureType type,
+                                                   const std::string &texture_name,
+                                                   const glm::vec2 &size) const {
+    auto getAtlasSize = [&](TextureType type) -> glm::vec2 const {
+        glm::vec2 atlas_size{1.0f, 1.0f};
+        switch (type) {
+        case TextureType::UI_ATLAS:
+            atlas_size.x = ui_atlas["meta"]["size"]["w"];
+            atlas_size.y = ui_atlas["meta"]["size"]["h"];
+            break;
+        case TextureType::TILESET_ATLAS:
+            atlas_size.x = tileset_atlas["meta"]["size"]["w"];
+            atlas_size.y = tileset_atlas["meta"]["size"]["h"];
+            break;
+        case TextureType::SPRITE_ATLAS:
+            atlas_size.x = sprite_atlas["meta"]["size"]["w"];
+            atlas_size.y = sprite_atlas["meta"]["size"]["h"];
+            break;
+        default:
+            std::cerr << "Error: Invalid texture type." << std::endl;
+            break;
+        }
+        return atlas_size;
+    };
+    static const std::unordered_map<TextureType, glm::vec2> atlas_sizes = {
+        {TextureType::UI_ATLAS, getAtlasSize(TextureType::UI_ATLAS)},
+        {TextureType::TILESET_ATLAS, getAtlasSize(TextureType::TILESET_ATLAS)},
+        {TextureType::SPRITE_ATLAS, getAtlasSize(TextureType::SPRITE_ATLAS)},
+    };
+
+    const json &info = getTextureFrameInfo(type, texture_name);
+    const glm::vec2 &atlas_size = atlas_sizes.at(type); // Safe access
+    glm::vec2 tex_coord(info["frame"]["x"], info["frame"]["y"]);
+    glm::vec2 tex_size(info["frame"]["w"], info["frame"]["h"]);
+    tex_coord /= atlas_size;
+    tex_size /= atlas_size;
+
+    return std::make_unique<Sprite>(Sprite(getTexture(type), tex_coord, tex_size, size));
 }
 
 std::shared_ptr<Texture> ResourceManager::getTexture(TextureType type) const {

@@ -13,8 +13,8 @@ class Sprite {
            const glm::vec2 &size);
     ~Sprite();
 
-    void render(const glm::vec2 &position, const glm::vec4 &color = glm::vec4(1.0f),
-                const glm::vec2 &scale = glm::vec2(1.0f), float rotation = 0.0f);
+    void render(const glm::vec2 &position, float z = 0.0f, float scale = 1.0f,
+                const glm::vec4 &color = glm::vec4(1.0f), float rotation = 0.0f); // TODO
 
   private:
     std::shared_ptr<Texture> texture;

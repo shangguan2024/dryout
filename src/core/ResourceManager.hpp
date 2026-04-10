@@ -3,6 +3,7 @@
 
 #include "Texture.hpp"
 #include "Shader.hpp"
+#include "Sprite.hpp"
 #include "json.hpp"
 
 #include <glad/glad.h>
@@ -32,6 +33,9 @@ class ResourceManager {
 
     std::shared_ptr<Texture> getTexture(TextureType type) const;
     std::shared_ptr<Shader> getShader(ShaderType type) const;
+
+    std::unique_ptr<Sprite> getSprite(TextureType type, const std::string &texture_name,
+                                      const glm::vec2 &size) const;
 
   private:
     ResourceManager();

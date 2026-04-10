@@ -100,6 +100,9 @@ void Renderer::init() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    // Enable depth testing
+    glEnable(GL_DEPTH_TEST);
+
     // Set the shader to be used by the renderer
     s_shader = std::make_shared<Shader>(s_default_vertex_shader, s_default_fragment_shader);
 
@@ -218,7 +221,7 @@ void Renderer::flush() {
     s_index_count = 0;
 }
 
-void Renderer::drawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color,
+void Renderer::drawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color,
                         const std::shared_ptr<Texture> &texture, const glm::vec2 &texture_coords,
                         const glm::vec2 &texture_size) {
     if (s_quad_count >= s_max_quad_count) {
@@ -240,16 +243,14 @@ void Renderer::drawQuad(const glm::vec2 &position, const glm::vec2 &size, const 
     // Add the quad vertices to the buffer
     const auto &p = position;
     const auto &s = size;
-    const auto &t_c = texture_coords;
-    const auto &t_s = texture_size;
+    const auto &tc = texture_coords;
+    const auto &ts = texture_size;
     s_quad_vertices[s_vertex_count++] =
-        QuadVertex({p.x + s.x, p.y, 0.0f}, color, {t_c.x + t_s.x, t_c.y + t_s.y}, texture_slot);
+        QuadVertex({p.x + s.x, p.y, p.z}, color, {tc.x + ts.x, tc.y + ts.y}, texture_slot);
+    s_quad_vertices[s_vertex_count++] = QuadVertex(p, color, {tc.x, tc.y + ts.y}, texture_slot);
+    s_quad_vertices[s_vertex_count++] = QuadVertex({p.x, p.y + s.y, p.z}, color, tc, texture_slot);
     s_quad_vertices[s_vertex_count++] =
-        QuadVertex({p.x, p.y, 0.0f}, color, {t_c.x, t_c.y + t_s.y}, texture_slot);
-    s_quad_vertices[s_vertex_count++] =
-        QuadVertex({p.x, p.y + s.y, 0.0f}, color, t_c, texture_slot);
-    s_quad_vertices[s_vertex_count++] =
-        QuadVertex({p.x + s.x, p.y + s.y, 0.0f}, color, {t_c.x + t_s.x, t_c.y}, texture_slot);
+        QuadVertex({p.x + s.x, p.y + s.y, p.z}, color, {tc.x + ts.x, tc.y}, texture_slot);
 
     // Add the quad indices to the buffer
     s_quad_indices[s_index_count++] = s_vertex_count - 4;

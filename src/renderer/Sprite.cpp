@@ -9,10 +9,9 @@ Sprite::Sprite(std::shared_ptr<Texture> texture, const glm::vec2 &tex_coord,
 
 Sprite::~Sprite() {}
 
-void Sprite::render(const glm::vec2 &position, const glm::vec4 &color, const glm::vec2 &scale,
+void Sprite::render(const glm::vec2 &position, float z, float scale, const glm::vec4 &color,
                     float rotation) {
-    // todo : rotation
-    Renderer::drawQuad(position - size * scale / 2.0f, size * scale, color, texture, tex_coord,
+    Renderer::drawQuad({position - size * scale / 2.0f, z}, size * scale, color, texture, tex_coord,
                        tex_size);
 }
 

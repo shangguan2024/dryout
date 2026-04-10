@@ -19,9 +19,9 @@ class Renderer {
     static void beginScene(const glm::mat4 &view_projection_matrix);
     static void endScene();
 
-    static void drawQuad(const glm::vec2 &position, const glm::vec2 &size, const glm::vec4 &color,
+    static void drawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color,
                          const std::shared_ptr<Texture> &texture, const glm::vec2 &texture_coords,
-                         const glm::vec2 &texture_size);
+                         const glm::vec2 &texture_size); // TODO
 
   private:
     static void flush();
