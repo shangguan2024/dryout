@@ -13,7 +13,7 @@
 
 using json = nlohmann::json;
 
-static const json empty_json = json::object();
+static const json s_empty_json = json::object();
 
 namespace dryout {
 
@@ -111,7 +111,7 @@ const json &ResourceManager::getTextureFrameInfo(TextureType type,
         return sprite_atlas["frames"][texture_name + ".png"];
     default:
         std::cerr << "Error: Invalid texture type." << std::endl;
-        return empty_json;
+        return s_empty_json;
     }
 }
 
@@ -149,14 +149,14 @@ std::unique_ptr<Sprite> ResourceManager::getSprite(TextureType type,
         }
         return atlas_size;
     };
-    static const std::unordered_map<TextureType, glm::vec2> atlas_sizes = {
+    static const std::unordered_map<TextureType, glm::vec2> s_atlas_sizes = {
         {TextureType::UI_ATLAS, getAtlasSize(TextureType::UI_ATLAS)},
         {TextureType::TILESET_ATLAS, getAtlasSize(TextureType::TILESET_ATLAS)},
         {TextureType::SPRITE_ATLAS, getAtlasSize(TextureType::SPRITE_ATLAS)},
     };
 
     const json &info = getTextureFrameInfo(type, texture_name);
-    const glm::vec2 &atlas_size = atlas_sizes.at(type); // Safe access
+    const glm::vec2 &atlas_size = s_atlas_sizes.at(type); // Safe access
     glm::vec2 tex_coord(info["frame"]["x"], info["frame"]["y"]);
     glm::vec2 tex_size(info["frame"]["w"], info["frame"]["h"]);
     tex_coord /= atlas_size;

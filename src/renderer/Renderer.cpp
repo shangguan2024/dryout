@@ -22,9 +22,9 @@ struct QuadVertex {
     float tex_index;
 };
 
-static const int s_max_quad_count = 100'000;
-static const int s_max_vertex_count = s_max_quad_count * 4;
-static const int s_max_index_count = s_max_quad_count * 6;
+static constexpr int s_max_quad_count = 100'000;
+static constexpr int s_max_vertex_count = s_max_quad_count * 4;
+static constexpr int s_max_index_count = s_max_quad_count * 6;
 
 static QuadVertex s_quad_vertices[s_max_vertex_count];
 static unsigned int s_quad_indices[s_max_index_count];
@@ -32,7 +32,7 @@ static int s_quad_count = 0;
 static int s_vertex_count = 0;
 static int s_index_count = 0;
 
-static const int s_max_tex_slot_count = 32;
+static constexpr int s_max_tex_slot_count = 32;
 static int s_tex_slot_count;
 static GLuint s_tex_slots[s_max_tex_slot_count];
 
