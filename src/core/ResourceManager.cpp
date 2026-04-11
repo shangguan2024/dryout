@@ -104,11 +104,11 @@ const json &ResourceManager::getTextureFrameInfo(TextureType type,
                                                  const std::string &texture_name) const {
     switch (type) {
     case TextureType::UI_ATLAS:
-        return ui_atlas["frames"][texture_name + ".png"];
+        return ui_atlas["frames"][texture_name];
     case TextureType::TILESET_ATLAS:
-        return tileset_atlas["frames"][texture_name + ".png"];
+        return tileset_atlas["frames"][texture_name];
     case TextureType::SPRITE_ATLAS:
-        return sprite_atlas["frames"][texture_name + ".png"];
+        return sprite_atlas["frames"][texture_name];
     default:
         std::cerr << "Error: Invalid texture type." << std::endl;
         return s_empty_json;

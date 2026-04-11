@@ -132,10 +132,7 @@ def process_category(base_path, category, output_dir):
         for file in files:
             if file.lower().endswith(('.png', '.jpg', '.jpeg')):
                 file_path = os.path.join(root, file)
-                # Rel path for name
-                rel_path = os.path.relpath(file_path, source_dir)
-                # Normalize separators to forward slash
-                name = rel_path.replace(os.sep, '/')
+                name = os.path.splitext(file)[0]
                 
                 try:
                     img = Image.open(file_path)

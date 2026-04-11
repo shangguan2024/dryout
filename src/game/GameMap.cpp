@@ -8,9 +8,8 @@
 namespace dryout {
 
 GameMap::GameMap(int width, int height)
-    : width(width), height(height), map_center(glm::vec2(width, height) * g_tile_size / 2.0f) {
-    tiles.assign(height, std::vector<Tile>(width, Tile(TileType::SAND)));
-}
+    : width(width), height(height), map_center(glm::vec2(width, height) * g_tile_size / 2.0f),
+      tiles(height, std::vector<Tile>(width, Tile(TileType::SAND))) {}
 
 GameMap::~GameMap() {}
 
