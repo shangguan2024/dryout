@@ -1,7 +1,8 @@
-#ifndef CAMERA_HPP
-#define CAMERA_HPP
+#ifndef CAMERA_MANAGER_HPP
+#define CAMERA_MANAGER_HPP
 
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace dryout {
 
@@ -36,6 +37,30 @@ class Camera {
     glm::mat4 projection_matrix, view_matrix;
 };
 
+class CameraManager {
+  public:
+    static CameraManager *getInstance();
+
+    void registerCamera(Camera *camera, bool active = false);
+    void unregisterCamera(Camera *camera);
+
+    void setActiveCamera(Camera *camera);
+    Camera *getActiveCamera();
+
+  private:
+    CameraManager();
+    ~CameraManager();
+
+    CameraManager(const CameraManager &) = delete;
+    CameraManager &operator=(const CameraManager &) = delete;
+    CameraManager(CameraManager &&) = delete;
+    CameraManager &operator=(CameraManager &&) = delete;
+
+    static CameraManager *instance;
+    std::vector<Camera *> cameras;
+    int active_camera_index;
+};
+
 } // namespace dryout
 
-#endif // CAMERA_HPP
+#endif // CAMERA_MANAGER_HPP

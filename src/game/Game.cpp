@@ -6,7 +6,7 @@
 #include "Sprite.hpp"
 #include "GameMap.hpp"
 #include "Player.hpp"
-#include "Camera.hpp"
+#include "CameraManager.hpp"
 
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
@@ -37,7 +37,9 @@ void Game::run() {
     float velocity = 100.0f;
     float delta = 1.0f / frame_rate;
     glm::vec2 position = glm::vec2(0.0f);
-    Camera camera;
+    Camera *camera = new Camera();
+    CameraManager *camera_manager = CameraManager::getInstance();
+    camera_manager->registerCamera(camera, true);
     std::shared_ptr<Texture> texture = resource_manager->getTexture(TextureType::SPRITE_ATLAS);
     Player player;
     GameMap game_map(63, 63);
@@ -56,7 +58,7 @@ void Game::run() {
                 SDL_GL_GetDrawableSize(graphics->getWindow(), &width, &height);
                 glViewport(0, 0, width, height);
                 float aspect = (float)width / (float)height;
-                camera.setAspect(aspect);
+                camera->setAspect(aspect);
             } else if (input_manager->handleEvent(event)) {
                 continue;
             } else {
@@ -67,10 +69,10 @@ void Game::run() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        camera.setEye(glm::vec3(position, 100.0f * coef));
-        camera.setCenter(glm::vec3(position, 0.0f));
+        camera->setEye(glm::vec3(position, 100.0f * coef));
+        camera->setCenter(glm::vec3(position, 0.0f));
 
-        Renderer::beginScene(camera.getViewProjectionMatrix());
+        Renderer::beginScene(camera->getViewProjectionMatrix());
         player.render();
         game_map.render(position);
         Renderer::endScene();
@@ -90,7 +92,7 @@ void Game::run() {
         // std::cout << "Player position: " << glm::to_string(position) << std::endl;
         glm::vec2 mouse_position = input_manager->getMousePosition();
         // std::cout << "Mouse position: " << glm::to_string(mouse_position) << std::endl;
-        game_map.test(camera, mouse_position);
+        // game_map.test(mouse_position);
 
         graphics->swapWindow();
 

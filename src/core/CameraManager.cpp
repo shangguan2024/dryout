@@ -1,13 +1,16 @@
-#include "Camera.hpp"
+#include "CameraManager.hpp"
 #include "Graphics.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
+#include <iostream>
+#include <algorithm>
 
 namespace dryout {
+
+// Camera
 
 Camera::Camera()
     : fovy(glm::radians(45.0f)), aspect(4.0f / 3.0f), near(g_near), far(g_far),
@@ -76,6 +79,62 @@ void Camera::updateProjectionMatrix() {
 
 void Camera::updateViewMatrix() {
     view_matrix = glm::lookAt(eye, center, up);
+}
+
+// CameraManager
+
+CameraManager *CameraManager::instance = nullptr;
+
+CameraManager *CameraManager::getInstance() {
+    if (instance == nullptr) {
+        instance = new CameraManager();
+    }
+    return instance;
+}
+
+void CameraManager::registerCamera(Camera *camera, bool active) {
+    if (std::find(cameras.begin(), cameras.end(), camera) == cameras.end()) {
+        cameras.push_back(camera); // Not thread-safe
+        if (active) {
+            active_camera_index = cameras.size() - 1;
+        }
+    } else {
+        std::cout << "CameraManager::registerCamera: camera already registered" << std::endl;
+    }
+}
+
+void CameraManager::unregisterCamera(Camera *camera) {
+    if (std::find(cameras.begin(), cameras.end(), camera) != cameras.end()) {
+        cameras.erase(std::find(cameras.begin(), cameras.end(), camera));
+    } else {
+        std::cout << "CameraManager::unregisterCamera: camera not registered" << std::endl;
+    }
+}
+
+void CameraManager::setActiveCamera(Camera *camera) {
+    for (int i = 0; i < cameras.size(); i++) {
+        if (cameras[i] == camera) {
+            active_camera_index = i;
+            return;
+        }
+    }
+    std::cout << "CameraManager::setActiveCamera: camera not registered" << std::endl;
+}
+
+Camera *CameraManager::getActiveCamera() {
+    if (active_camera_index == -1) {
+        std::cout << "CameraManager::getActiveCamera: no active camera" << std::endl;
+        return nullptr;
+    }
+    return cameras[active_camera_index];
+}
+
+CameraManager::CameraManager() : active_camera_index(-1) {
+    // TODO
+}
+
+CameraManager::~CameraManager() {
+    // TODO
 }
 
 } // namespace dryout

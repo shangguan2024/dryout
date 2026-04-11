@@ -1,6 +1,8 @@
 #include "GameMap.hpp"
+#include "ResourceManager.hpp"
+#include "InputManager.hpp"
 #include "Tile.hpp"
-#include "Camera.hpp"
+#include "CameraManager.hpp"
 
 #include <glm/glm.hpp>
 #include <iostream>
@@ -9,7 +11,11 @@ namespace dryout {
 
 GameMap::GameMap(int width, int height)
     : width(width), height(height), map_center(glm::vec2(width, height) * g_tile_size / 2.0f),
-      tiles(height, std::vector<Tile>(width, Tile(TileType::SAND))) {}
+      tiles(height, std::vector<Tile>(width, Tile(TileType::SAND))) {
+    InputManager *input_manager = InputManager::getInstance();
+    input_manager->registerMouseCallback(InputType::DOWN, MouseButton::LEFT,
+                                         [this](const glm::vec2 &screen_pos) { test(screen_pos); });
+}
 
 GameMap::~GameMap() {}
 
@@ -22,7 +28,11 @@ void GameMap::render(const glm::vec2 &center) const {
     }
 }
 
-void GameMap::test(const Camera &camera, const glm::vec2 &screen_pos) {
+void GameMap::test(const glm::vec2 &screen_pos) {
+    Camera *camera = CameraManager::getInstance()->getActiveCamera();
+    if (camera == nullptr) {
+        return;
+    }
     glm::ivec2 tile_index = locateTile(camera, screen_pos);
     tiles[tile_index.x][tile_index.y].setType(TileType::WET_SAND);
 }
@@ -38,8 +48,8 @@ glm::ivec2 GameMap::tileIndex(const glm::vec2 &world_pos) const {
     return index;
 }
 
-glm::ivec2 GameMap::locateTile(const Camera &camera, const glm::vec2 &screen_pos) const {
-    glm::mat2x3 ray = camera.getRay(screen_pos);
+glm::ivec2 GameMap::locateTile(const Camera *camera, const glm::vec2 &screen_pos) const {
+    glm::mat2x3 ray = camera->getRay(screen_pos);
     auto &near_point = ray[0];
     auto &far_point = ray[1];
     float t = -near_point.z / (far_point.z - near_point.z);
