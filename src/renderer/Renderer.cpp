@@ -90,7 +90,7 @@ void Renderer::init() {
     std::cout << "Initializing renderer..." << std::endl;
 
     // Get the maximum number of texture units supported by the GPU
-    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &s_tex_slot_count);
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &s_tex_slot_count);
     if (s_tex_slot_count > s_max_tex_slot_count) {
         s_tex_slot_count = s_max_tex_slot_count;
     }
@@ -122,12 +122,12 @@ void Renderer::init() {
     // Create and bind the vertex buffer object (VBO)
     glGenBuffers(1, &s_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, s_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(s_quad_vertices), s_quad_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(s_quad_vertices), s_quad_vertices, GL_DYNAMIC_DRAW);
 
     // Create and bind the element buffer object (EBO)
     glGenBuffers(1, &s_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(s_quad_indices), s_quad_indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(s_quad_indices), s_quad_indices, GL_DYNAMIC_DRAW);
 
     // Create and bind the vertex array object (VAO)
     glGenVertexArrays(1, &s_vao);
@@ -196,7 +196,6 @@ void Renderer::endScene() {
 
 void Renderer::flush() {
     if (s_quad_count == 0) {
-        std::cerr << "No quad to flush." << std::endl;
         return;
     }
 
