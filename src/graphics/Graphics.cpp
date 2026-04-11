@@ -25,6 +25,12 @@ void Graphics::swapWindow() {
     SDL_GL_SwapWindow(window);
 }
 
+glm::ivec2 Graphics::getWindowSize() {
+    int width, height;
+    SDL_GL_GetDrawableSize(window, &width, &height);
+    return glm::ivec2(width, height);
+}
+
 Graphics::Graphics() : window(nullptr), context(nullptr) {
     init();
 }
@@ -57,7 +63,8 @@ void Graphics::init() {
 
     std::cout << "Initializing window..." << std::endl;
     window = SDL_CreateWindow("Dryout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600,
-                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+                                  SDL_WINDOW_ALLOW_HIGHDPI);
     if (!window) {
         std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         return;

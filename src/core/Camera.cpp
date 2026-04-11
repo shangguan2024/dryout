@@ -1,7 +1,11 @@
 #include "Camera.hpp"
+#include "Graphics.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 namespace dryout {
 
@@ -14,6 +18,16 @@ Camera::Camera()
 
 glm::mat4 Camera::getViewProjectionMatrix() const {
     return projection_matrix * view_matrix;
+}
+
+glm::mat2x3 Camera::getRay(const glm::ivec2 &screen_pos) const {
+    Graphics *graphics = Graphics::getInstance();
+    glm::vec2 window_size = graphics->getWindowSize();
+    glm::vec2 win(screen_pos.x, window_size.y - screen_pos.y);
+    glm::vec4 viewport(0.0f, 0.0f, window_size);
+    glm::vec3 near_point = glm::unProject({win, 0.0f}, view_matrix, projection_matrix, viewport);
+    glm::vec3 far_point = glm::unProject({win, 1.0f}, view_matrix, projection_matrix, viewport);
+    return glm::mat2x3(near_point, far_point);
 }
 
 void Camera::setFovyByDegrees(float degrees) {

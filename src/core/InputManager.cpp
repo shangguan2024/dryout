@@ -92,6 +92,15 @@ static MouseButton sdlMouseButtonToEnum(Uint8 button) {
 
 InputManager *InputManager::instance = nullptr;
 
+InputManager::InputManager() {
+    pushKeyCallback();
+    pushMouseCallback();
+}
+
+InputManager::~InputManager() {
+    // TODO
+}
+
 InputManager *InputManager::getInstance() {
     if (instance == nullptr) {
         instance = new InputManager();
@@ -101,18 +110,34 @@ InputManager *InputManager::getInstance() {
 
 bool InputManager::handleEvent(SDL_Event &event) {
     switch (event.type) {
-    case SDL_KEYDOWN:
-        key_states[sdlKeyToEnum(event.key.keysym.scancode)] = true;
-        break;
-    case SDL_KEYUP:
-        key_states[sdlKeyToEnum(event.key.keysym.scancode)] = false;
-        break;
-    case SDL_MOUSEBUTTONDOWN:
-        mouse_states[sdlMouseButtonToEnum(event.button.button)] = true;
-        break;
-    case SDL_MOUSEBUTTONUP:
-        mouse_states[sdlMouseButtonToEnum(event.button.button)] = false;
-        break;
+    case SDL_KEYDOWN: {
+        auto key = sdlKeyToEnum(event.key.keysym.scancode);
+        if (!key_states[key]) {
+            keyCallback(InputType::DOWN, key);
+            key_states[key] = true;
+        }
+    } break;
+    case SDL_KEYUP: {
+        auto key = sdlKeyToEnum(event.key.keysym.scancode);
+        if (key_states[key]) {
+            keyCallback(InputType::UP, key);
+            key_states[key] = false;
+        }
+    } break;
+    case SDL_MOUSEBUTTONDOWN: {
+        auto button = sdlMouseButtonToEnum(event.button.button);
+        if (!mouse_states[button]) {
+            mouse_states[button] = true;
+            mouseCallback(InputType::DOWN, button, glm::vec2(event.button.x, event.button.y));
+        }
+    } break;
+    case SDL_MOUSEBUTTONUP: {
+        auto button = sdlMouseButtonToEnum(event.button.button);
+        if (mouse_states[button]) {
+            mouse_states[button] = false;
+            mouseCallback(InputType::UP, button, glm::vec2(event.button.x, event.button.y));
+        }
+    } break;
     default:
         return false;
     }
@@ -127,12 +152,93 @@ bool InputManager::isMouseButtonDown(MouseButton button) {
     return mouse_states[button];
 }
 
-InputManager::InputManager() {
-    // TODO
+glm::vec2 InputManager::getMousePosition() {
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    return glm::vec2(x, y);
 }
 
-InputManager::~InputManager() {
-    // TODO
+void InputManager::pushKeyCallback() {
+    key_down_callbacks.push({});
+    key_up_callbacks.push({});
+}
+
+void InputManager::pushMouseCallback() {
+    mouse_down_callbacks.push({});
+    mouse_up_callbacks.push({});
+}
+
+void InputManager::popKeyCallback() {
+    if (key_down_callbacks.empty()) {
+        return;
+    }
+    key_down_callbacks.pop();
+    key_up_callbacks.pop();
+}
+
+void InputManager::popMouseCallback() {
+    if (mouse_down_callbacks.empty()) {
+        return;
+    }
+    mouse_down_callbacks.pop();
+    mouse_up_callbacks.pop();
+}
+
+void InputManager::registerKeyCallback(InputType type, KeyCode key,
+                                       std::function<void()> callback) {
+    if (type == InputType::DOWN) {
+        key_down_callbacks.top()[key] = callback;
+    } else if (type == InputType::UP) {
+        key_up_callbacks.top()[key] = callback;
+    }
+}
+
+void InputManager::registerMouseCallback(InputType type, MouseButton button,
+                                         std::function<void(glm::vec2)> callback) {
+    if (type == InputType::DOWN) {
+        mouse_down_callbacks.top()[button] = callback;
+    } else if (type == InputType::UP) {
+        mouse_up_callbacks.top()[button] = callback;
+    }
+}
+
+void InputManager::unregisterKeyCallback(InputType type, KeyCode key) {
+    if (type == InputType::DOWN) {
+        key_down_callbacks.top().erase(key);
+    } else if (type == InputType::UP) {
+        key_up_callbacks.top().erase(key);
+    }
+}
+
+void InputManager::unregisterMouseCallback(InputType type, MouseButton button) {
+    if (type == InputType::DOWN) {
+        mouse_down_callbacks.top().erase(button);
+    } else if (type == InputType::UP) {
+        mouse_up_callbacks.top().erase(button);
+    }
+}
+
+void InputManager::keyCallback(InputType type, KeyCode key) {
+    auto &key_callbacks = type == InputType::DOWN ? key_down_callbacks : key_up_callbacks;
+    if (key_callbacks.empty()) {
+        return;
+    }
+    auto &callbacks = key_callbacks.top();
+    if (callbacks[key] != nullptr) {
+        callbacks[key]();
+    }
+}
+
+void InputManager::mouseCallback(InputType type, MouseButton button, glm::vec2 position) {
+    std::cout << "Mouse callback: " << position.x << ", " << position.y << std::endl;
+    auto &mouse_callbacks = type == InputType::DOWN ? mouse_down_callbacks : mouse_up_callbacks;
+    if (mouse_callbacks.empty()) {
+        return;
+    }
+    auto &callbacks = mouse_callbacks.top();
+    if (callbacks[button] != nullptr) {
+        callbacks[button](position);
+    }
 }
 
 } // namespace dryout

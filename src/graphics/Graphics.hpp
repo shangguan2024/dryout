@@ -15,6 +15,8 @@ class Graphics {
     SDL_Window *getWindow();
     void swapWindow();
 
+    glm::ivec2 getWindowSize();
+
   private:
     Graphics();
     ~Graphics();

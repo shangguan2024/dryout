@@ -14,6 +14,7 @@ class Camera {
     ~Camera() = default;
 
     glm::mat4 getViewProjectionMatrix() const;
+    glm::mat2x3 getRay(const glm::ivec2 &screen_pos) const; // [near_point, far_point]
 
     void setFovyByDegrees(float degrees);
     void setFovyRadians(float radians);

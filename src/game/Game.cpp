@@ -84,10 +84,13 @@ void Game::run() {
         if (input_manager->isKeyDown(KeyCode::X)) {
             coef /= 0.95f;
         }
-        coef = std::clamp(coef, 0.1f, 10.0f);
+        coef = std::clamp(coef, g_near / 100.0f + 0.1f, g_far / 100.0f - 0.1f);
         player.update(delta);
         position = player.getPosition();
         // std::cout << "Player position: " << glm::to_string(position) << std::endl;
+        glm::vec2 mouse_position = input_manager->getMousePosition();
+        // std::cout << "Mouse position: " << glm::to_string(mouse_position) << std::endl;
+        game_map.test(camera, mouse_position);
 
         graphics->swapWindow();
 

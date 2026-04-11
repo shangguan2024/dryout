@@ -2,6 +2,7 @@
 #define GAME_MAP_HPP
 
 #include "Tile.hpp"
+#include "Camera.hpp"
 
 #include <vector>
 
@@ -12,9 +13,15 @@ class GameMap {
     GameMap(int width, int height);
     ~GameMap();
 
-    void render(glm::vec2 center) const;
+    void render(const glm::vec2 &center) const;
+
+    void test(const Camera &camera, const glm::vec2 &screen_pos); // To be removed
 
   private:
+    glm::vec2 tileWorldPos(int x, int y) const;
+    glm::ivec2 tileIndex(const glm::vec2 &world_pos) const;
+    glm::ivec2 locateTile(const Camera &camera, const glm::vec2 &screen_pos) const;
+
     int width, height;
     glm::vec2 map_center;
     std::vector<std::vector<Tile>> tiles;
