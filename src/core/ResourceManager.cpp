@@ -25,10 +25,9 @@ ResourceManager::ResourceManager() {
     std::filesystem::path root = std::filesystem::current_path().parent_path() / "res";
 
     std::cout << "Loading textures..." << std::endl;
-    loadTexture(root / "textures" / "atlas", "ui_atlas", ui_atlas, ui_atlas_texture);
-    loadTexture(root / "textures" / "atlas", "tilesets_atlas", tileset_atlas,
-                tileset_atlas_texture);
-    loadTexture(root / "textures" / "atlas", "sprites_atlas", sprite_atlas, sprite_atlas_texture);
+    loadTexture(root / "textures", "ui_atlas", ui_atlas, ui_atlas_texture);
+    loadTexture(root / "textures", "tilesets_atlas", tileset_atlas, tileset_atlas_texture);
+    loadTexture(root / "textures", "sprites_atlas", sprite_atlas, sprite_atlas_texture);
     std::cout << "Textures loaded." << std::endl;
 
     std::cout << "Loading shaders..." << std::endl;

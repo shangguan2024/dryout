@@ -16,13 +16,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-file(COPY res DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY res/shaders/ DESTINATION ${CMAKE_BINARY_DIR}/res/shaders)
+file(COPY res/textures/atlas/ DESTINATION ${CMAKE_BINARY_DIR}/res/textures)
 
 add_subdirectory(src)
 
 # Install
 
-install(DIRECTORY res DESTINATION .)
+install(DIRECTORY res/shaders/ DESTINATION res/shaders)
+install(DIRECTORY res/textures/atlas/ DESTINATION res/textures)
 
 set(CPACK_PACKAGE_NAME "dryout")
 set(CPACK_PACKAGE_VERSION "1.0.0")
