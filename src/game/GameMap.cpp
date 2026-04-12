@@ -11,11 +11,7 @@ namespace dryout {
 
 GameMap::GameMap(int width, int height)
     : width(width), height(height), map_center(glm::vec2(width, height) * g_tile_size / 2.0f),
-      tiles(height, std::vector<Tile>(width, Tile(TileType::SAND))) {
-    InputManager *input_manager = InputManager::getInstance();
-    input_manager->registerMouseCallback(InputType::DOWN, MouseButton::LEFT,
-                                         [this](const glm::vec2 &screen_pos) { test(screen_pos); });
-}
+      tiles(height, std::vector<Tile>(width, Tile(TileType::SAND))) {}
 
 GameMap::~GameMap() {}
 
@@ -28,12 +24,8 @@ void GameMap::render(const glm::vec2 &center) const {
     }
 }
 
-void GameMap::test(const glm::vec2 &screen_pos) {
-    Camera *camera = CameraManager::getInstance()->getActiveCamera();
-    if (camera == nullptr) {
-        return;
-    }
-    glm::ivec2 tile_index = locateTile(camera, screen_pos);
+void GameMap::test(const glm::vec2 &world_pos) {
+    glm::ivec2 tile_index = tileIndex(world_pos);
     tiles[tile_index.x][tile_index.y].setType(TileType::WET_SAND);
 }
 

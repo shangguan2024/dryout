@@ -27,6 +27,8 @@ Game *Game::getInstance() {
     return instance;
 }
 
+GameMap *g_map = nullptr; // test
+
 void Game::run() {
     // test
     Graphics *graphics = Graphics::getInstance();
@@ -42,7 +44,7 @@ void Game::run() {
     camera_manager->registerCamera(camera, true);
     std::shared_ptr<Texture> texture = resource_manager->getTexture(TextureType::SPRITE);
     Player player;
-    GameMap game_map(63, 63);
+    g_map = new GameMap(63, 63);
 
     bool running = true;
     SDL_Event event;
@@ -74,7 +76,7 @@ void Game::run() {
 
         Renderer::beginScene(camera->getViewProjectionMatrix());
         player.render();
-        game_map.render(position);
+        g_map->render(position);
         Renderer::endScene();
 
         if (input_manager->isKeyDown(KeyCode::ESC)) {
@@ -89,10 +91,6 @@ void Game::run() {
         coef = std::clamp(coef, g_near / 100.0f + 0.1f, g_far / 100.0f - 0.1f);
         player.update(delta);
         position = player.getPosition();
-        // std::cout << "Player position: " << glm::to_string(position) << std::endl;
-        glm::vec2 mouse_position = input_manager->getMousePosition();
-        // std::cout << "Mouse position: " << glm::to_string(mouse_position) << std::endl;
-        // game_map.test(mouse_position);
 
         graphics->swapWindow();
 

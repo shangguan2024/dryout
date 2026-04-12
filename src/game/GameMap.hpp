@@ -8,6 +8,9 @@
 
 namespace dryout {
 
+class GameMap;
+extern GameMap *g_map; // test
+
 class GameMap {
   public:
     GameMap(int width, int height);
@@ -15,7 +18,7 @@ class GameMap {
 
     void render(const glm::vec2 &center) const;
 
-    void test(const glm::vec2 &screen_pos); // To be removed
+    void test(const glm::vec2 &world_pos); // To be removed
 
   private:
     glm::vec2 tileWorldPos(int x, int y) const;

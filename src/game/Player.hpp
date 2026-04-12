@@ -22,11 +22,15 @@ class Player {
   private:
     void init();
 
+    void interact(const glm::vec2 &screen_pos);
+
+    std::unique_ptr<Sprite> sprite;
+
     glm::vec2 position;
     float velocity;
     glm::vec2 direction;
 
-    std::unique_ptr<Sprite> sprite;
+    float interaction_radius;
 };
 
 } // namespace dryout
