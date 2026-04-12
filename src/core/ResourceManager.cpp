@@ -102,11 +102,11 @@ void ResourceManager::loadShader(const std::filesystem::path &path, const std::s
 const json &ResourceManager::getTextureFrameInfo(TextureType type,
                                                  const std::string &texture_name) const {
     switch (type) {
-    case TextureType::UI_ATLAS:
+    case TextureType::UI:
         return ui_atlas["frames"][texture_name];
-    case TextureType::TILESET_ATLAS:
+    case TextureType::TILE:
         return tileset_atlas["frames"][texture_name];
-    case TextureType::SPRITE_ATLAS:
+    case TextureType::SPRITE:
         return sprite_atlas["frames"][texture_name];
     default:
         std::cerr << "Error: Invalid texture type." << std::endl;
@@ -130,15 +130,15 @@ std::unique_ptr<Sprite> ResourceManager::getSprite(TextureType type,
     auto getAtlasSize = [&](TextureType type) -> glm::vec2 const {
         glm::vec2 atlas_size{1.0f, 1.0f};
         switch (type) {
-        case TextureType::UI_ATLAS:
+        case TextureType::UI:
             atlas_size.x = ui_atlas["meta"]["size"]["w"];
             atlas_size.y = ui_atlas["meta"]["size"]["h"];
             break;
-        case TextureType::TILESET_ATLAS:
+        case TextureType::TILE:
             atlas_size.x = tileset_atlas["meta"]["size"]["w"];
             atlas_size.y = tileset_atlas["meta"]["size"]["h"];
             break;
-        case TextureType::SPRITE_ATLAS:
+        case TextureType::SPRITE:
             atlas_size.x = sprite_atlas["meta"]["size"]["w"];
             atlas_size.y = sprite_atlas["meta"]["size"]["h"];
             break;
@@ -149,9 +149,9 @@ std::unique_ptr<Sprite> ResourceManager::getSprite(TextureType type,
         return atlas_size;
     };
     static const std::unordered_map<TextureType, glm::vec2> s_atlas_sizes = {
-        {TextureType::UI_ATLAS, getAtlasSize(TextureType::UI_ATLAS)},
-        {TextureType::TILESET_ATLAS, getAtlasSize(TextureType::TILESET_ATLAS)},
-        {TextureType::SPRITE_ATLAS, getAtlasSize(TextureType::SPRITE_ATLAS)},
+        {TextureType::UI, getAtlasSize(TextureType::UI)},
+        {TextureType::TILE, getAtlasSize(TextureType::TILE)},
+        {TextureType::SPRITE, getAtlasSize(TextureType::SPRITE)},
     };
 
     const json &info = getTextureFrameInfo(type, texture_name);
@@ -166,11 +166,11 @@ std::unique_ptr<Sprite> ResourceManager::getSprite(TextureType type,
 
 std::shared_ptr<Texture> ResourceManager::getTexture(TextureType type) const {
     switch (type) {
-    case TextureType::UI_ATLAS:
+    case TextureType::UI:
         return ui_atlas_texture;
-    case TextureType::TILESET_ATLAS:
+    case TextureType::TILE:
         return tileset_atlas_texture;
-    case TextureType::SPRITE_ATLAS:
+    case TextureType::SPRITE:
         return sprite_atlas_texture;
     default:
         std::cerr << "Error: Invalid texture type." << std::endl;

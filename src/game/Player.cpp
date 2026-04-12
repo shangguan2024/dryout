@@ -9,9 +9,10 @@ namespace dryout {
 static constexpr float s_default_player_velocity = 100.0f;
 static constexpr glm::vec2 s_player_size(10.0f);
 
-Player::Player() : position(0.0f), velocity(s_default_player_velocity), direction(0.0f) {
-    sprite = ResourceManager::getInstance()->getSprite(TextureType::SPRITE_ATLAS, "player",
-                                                       s_player_size);
+Player::Player(const std::string &name)
+    : position(0.0f), velocity(s_default_player_velocity), direction(0.0f) {
+    sprite = ResourceManager::getInstance()->getSprite(TextureType::SPRITE, name, s_player_size);
+    init();
 }
 
 Player::~Player() {
@@ -47,5 +48,7 @@ void Player::update(float delta) {
 void Player::render() const {
     sprite->render(position, 0.1f);
 }
+
+void Player::init() {}
 
 } // namespace dryout

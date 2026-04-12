@@ -32,15 +32,15 @@ void Game::run() {
     Graphics *graphics = Graphics::getInstance();
     ResourceManager *resource_manager = ResourceManager::getInstance();
     InputManager *input_manager = InputManager::getInstance();
+    CameraManager *camera_manager = CameraManager::getInstance();
 
     int frame_rate = 60;
     float velocity = 100.0f;
     float delta = 1.0f / frame_rate;
     glm::vec2 position = glm::vec2(0.0f);
     Camera *camera = new Camera();
-    CameraManager *camera_manager = CameraManager::getInstance();
     camera_manager->registerCamera(camera, true);
-    std::shared_ptr<Texture> texture = resource_manager->getTexture(TextureType::SPRITE_ATLAS);
+    std::shared_ptr<Texture> texture = resource_manager->getTexture(TextureType::SPRITE);
     Player player;
     GameMap game_map(63, 63);
 

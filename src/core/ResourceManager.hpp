@@ -17,9 +17,9 @@ namespace dryout {
 
 enum class TextureType : unsigned int {
     NONE = 0,
-    UI_ATLAS,
-    TILESET_ATLAS,
-    SPRITE_ATLAS,
+    UI,
+    TILE,
+    SPRITE,
 };
 
 enum class ShaderType : unsigned int {
