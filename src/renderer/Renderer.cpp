@@ -2,6 +2,9 @@
 #include "Shader.hpp"
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/rotate_vector.hpp>
 #include <memory>
 #include <iostream>
 #include <string>
@@ -85,6 +88,8 @@ static std::shared_ptr<Shader> s_shader;
 static GLuint s_vbo;
 static GLuint s_ebo;
 static GLuint s_vao;
+
+Renderer::RenderContext Renderer::context{};
 
 void Renderer::init() {
     std::cout << "Initializing renderer..." << std::endl;
@@ -182,12 +187,12 @@ void Renderer::setShader(const std::shared_ptr<Shader> &shader) {
     s_shader = shader;
 }
 
-void Renderer::beginScene(const glm::mat4 &view_projection_matrix) {
+void Renderer::beginScene() {
     s_quad_count = 0;
     s_vertex_count = 0;
     s_index_count = 0;
     s_shader->bind();
-    s_shader->setMat4("u_ViewProjectionMatrix", view_projection_matrix);
+    s_shader->setMat4("u_ViewProjectionMatrix", context.view_projection_matrix);
 }
 
 void Renderer::endScene() {
@@ -220,36 +225,42 @@ void Renderer::flush() {
     s_index_count = 0;
 }
 
-void Renderer::drawQuad(const glm::vec3 &position, const glm::vec2 &size, const glm::vec4 &color,
-                        const std::shared_ptr<Texture> &texture, const glm::vec2 &texture_coords,
-                        const glm::vec2 &texture_size) {
+void Renderer::drawQuad(const glm::vec3 &position, const glm::vec2 &size, RenderType type,
+                        const glm::vec4 &color, const std::shared_ptr<Texture> &texture,
+                        const glm::vec2 &tex_coords, const glm::vec2 &tex_size) {
     if (s_quad_count >= s_max_quad_count) {
         flush();
     }
 
     // Get the texture ID and bind it to a texture slot
     GLuint texture_id = texture->getTextureID();
-    int texture_slot = getTextureSlot(texture_id);
-    if (texture_slot == -1) {
-        texture_slot = bindTextureSlot(texture_id);
+    int tex_slot = getTextureSlot(texture_id);
+    if (tex_slot == -1) {
+        tex_slot = bindTextureSlot(texture_id);
     }
-    if (texture_slot == -1) {
+    if (tex_slot == -1) {
         flush();
         resetTextureSlots();
-        texture_slot = bindTextureSlot(texture_id);
+        tex_slot = bindTextureSlot(texture_id);
     }
 
     // Add the quad vertices to the buffer
     const auto &p = position;
     const auto &s = size;
-    const auto &tc = texture_coords;
-    const auto &ts = texture_size;
-    s_quad_vertices[s_vertex_count++] =
-        QuadVertex({p.x + s.x, p.y, p.z}, color, {tc.x + ts.x, tc.y + ts.y}, texture_slot);
-    s_quad_vertices[s_vertex_count++] = QuadVertex(p, color, {tc.x, tc.y + ts.y}, texture_slot);
-    s_quad_vertices[s_vertex_count++] = QuadVertex({p.x, p.y + s.y, p.z}, color, tc, texture_slot);
-    s_quad_vertices[s_vertex_count++] =
-        QuadVertex({p.x + s.x, p.y + s.y, p.z}, color, {tc.x + ts.x, tc.y}, texture_slot);
+    const auto &tc = tex_coords;
+    const auto &ts = tex_size;
+    glm::vec2 yz(s.y, 0.0f);
+    if (type == RenderType::BILLBOARD) {
+        yz = glm::rotate(yz, context.polar_angle); // TODO: 3d billboard rotation
+    }
+    glm::vec3 rd(s.x, 0.0f, 0.0f);
+    glm::vec3 ld(0.0f, 0.0f, 0.0f);
+    glm::vec3 lu(0.0f, yz);
+    glm::vec3 ru(s.x, yz);
+    s_quad_vertices[s_vertex_count++] = QuadVertex(p + rd, color, tc + ts, tex_slot);
+    s_quad_vertices[s_vertex_count++] = QuadVertex(p + ld, color, {tc.x, tc.y + ts.y}, tex_slot);
+    s_quad_vertices[s_vertex_count++] = QuadVertex(p + lu, color, tc, tex_slot);
+    s_quad_vertices[s_vertex_count++] = QuadVertex(p + ru, color, {tc.x + ts.x, tc.y}, tex_slot);
 
     // Add the quad indices to the buffer
     s_quad_indices[s_index_count++] = s_vertex_count - 4;

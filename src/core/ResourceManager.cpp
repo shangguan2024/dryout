@@ -126,7 +126,8 @@ std::shared_ptr<Shader> ResourceManager::getShader(ShaderType type) const {
 
 std::unique_ptr<Sprite> ResourceManager::getSprite(TextureType type,
                                                    const std::string &texture_name,
-                                                   const glm::vec2 &size) const {
+                                                   const glm::vec2 &size,
+                                                   RenderType render_type) const {
     auto getAtlasSize = [&](TextureType type) -> glm::vec2 const {
         glm::vec2 atlas_size{1.0f, 1.0f};
         switch (type) {
@@ -161,7 +162,7 @@ std::unique_ptr<Sprite> ResourceManager::getSprite(TextureType type,
     tex_coord /= atlas_size;
     tex_size /= atlas_size;
 
-    return std::make_unique<Sprite>(Sprite(getTexture(type), tex_coord, tex_size, size));
+    return std::make_unique<Sprite>(getTexture(type), tex_coord, tex_size, size, render_type);
 }
 
 std::shared_ptr<Texture> ResourceManager::getTexture(TextureType type) const {

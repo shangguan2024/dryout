@@ -17,10 +17,10 @@ TileFlyweight::TileFlyweight() {
     ResourceManager *resource_manager = ResourceManager::getInstance();
 
     flyweight[static_cast<unsigned int>(TileType::UNKNOWN)] = nullptr;
-    flyweight[static_cast<unsigned int>(TileType::SAND)] =
-        resource_manager->getSprite(TextureType::TILE, "sand", glm::vec2(g_tile_size));
-    flyweight[static_cast<unsigned int>(TileType::WET_SAND)] =
-        resource_manager->getSprite(TextureType::TILE, "wet_sand", glm::vec2(g_tile_size));
+    flyweight[static_cast<unsigned int>(TileType::SAND)] = resource_manager->getSprite(
+        TextureType::TILE, "sand", glm::vec2(g_tile_size), RenderType::NORMAL);
+    flyweight[static_cast<unsigned int>(TileType::WET_SAND)] = resource_manager->getSprite(
+        TextureType::TILE, "wet_sand", glm::vec2(g_tile_size), RenderType::NORMAL);
 }
 
 TileFlyweight *TileFlyweight::getInstance() {

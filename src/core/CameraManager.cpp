@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/vector_angle.hpp>
 #include <iostream>
 #include <algorithm>
 
@@ -17,6 +17,10 @@ Camera::Camera()
       eye(0.0f, 0.0f, 100.0f), center(0.0f, 0.0f, 0.0f), up(0.0f, 1.0f, 0.0f) {
     updateProjectionMatrix();
     updateViewMatrix();
+}
+
+float Camera::getPolarAngle() const {
+    return glm::angle(glm::normalize(eye - center), {0.0f, 0.0f, 1.0f});
 }
 
 glm::mat4 Camera::getViewProjectionMatrix() const {

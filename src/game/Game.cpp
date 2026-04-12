@@ -40,9 +40,14 @@ void Game::run() {
     glm::vec2 position = glm::vec2(0.0f);
     Camera *camera = new Camera();
     camera_manager->registerCamera(camera, true);
-    std::shared_ptr<Texture> texture = resource_manager->getTexture(TextureType::SPRITE);
     Player player;
     g_map = new GameMap(63, 63);
+
+    auto fillRenderContext = [&]() {
+        auto &context = Renderer::context;
+        context.polar_angle = camera->getPolarAngle();
+        context.view_projection_matrix = camera->getViewProjectionMatrix();
+    };
 
     bool running = true;
     SDL_Event event;
@@ -72,7 +77,8 @@ void Game::run() {
         camera->setEye(glm::vec3(position + glm::vec2(0.0f, -100.0f * coef), 100.0f * coef));
         camera->setCenter(glm::vec3(position, 0.0f));
 
-        Renderer::beginScene(camera->getViewProjectionMatrix());
+        fillRenderContext();
+        Renderer::beginScene();
         player.render();
         g_map->render(position);
         Renderer::endScene();

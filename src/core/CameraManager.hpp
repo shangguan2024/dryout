@@ -14,6 +14,7 @@ class Camera {
     Camera();
     ~Camera() = default;
 
+    float getPolarAngle() const;
     glm::mat4 getViewProjectionMatrix() const;
     glm::mat2x3 getRay(const glm::ivec2 &screen_pos) const; // [near_point, far_point]
 

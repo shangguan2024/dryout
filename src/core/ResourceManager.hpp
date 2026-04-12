@@ -35,7 +35,7 @@ class ResourceManager {
     std::shared_ptr<Shader> getShader(ShaderType type) const;
 
     std::unique_ptr<Sprite> getSprite(TextureType type, const std::string &texture_name,
-                                      const glm::vec2 &size) const;
+                                      const glm::vec2 &size, RenderType render_type) const;
 
   private:
     ResourceManager();
