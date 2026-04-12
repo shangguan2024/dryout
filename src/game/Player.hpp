@@ -1,7 +1,7 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
-#include "Sprite.hpp"
+#include "Entity.hpp"
 
 #include <glm/glm.hpp>
 #include <string>
@@ -9,7 +9,7 @@
 
 namespace dryout {
 
-class Player {
+class Player : public Entity {
   public:
     Player(const std::string &name = "player"); // TODO: Player(...)
     ~Player();
@@ -22,9 +22,7 @@ class Player {
   private:
     void init();
 
-    void interact(const glm::vec2 &screen_pos);
-
-    std::unique_ptr<Sprite> sprite;
+    void interact(const glm::vec2 &screen_pos, int type); // TODO
 
     glm::vec2 position;
     float velocity;

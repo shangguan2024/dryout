@@ -2,6 +2,7 @@
 #define TILE_HPP
 
 #include "Sprite.hpp"
+#include "Entity.hpp"
 
 #include <glm/glm.hpp>
 #include <array>
@@ -48,9 +49,15 @@ class Tile {
 
     void render(const glm::vec2 &position) const;
 
+    void attachEntity(Entity *entity);
+    void detachEntity();
+    Entity *getAttachedEntity() const;
+
   private:
     TileType type;
+
     // Other properties
+    Entity *attached_entity; // TODO: better solution
 };
 
 } // namespace dryout

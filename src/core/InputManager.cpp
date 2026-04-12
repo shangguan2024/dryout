@@ -230,7 +230,6 @@ void InputManager::keyCallback(InputType type, KeyCode key) {
 }
 
 void InputManager::mouseCallback(InputType type, MouseButton button, glm::vec2 position) {
-    std::cout << "Mouse callback: " << position.x << ", " << position.y << std::endl;
     auto &mouse_callbacks = type == InputType::DOWN ? mouse_down_callbacks : mouse_up_callbacks;
     if (mouse_callbacks.empty()) {
         return;

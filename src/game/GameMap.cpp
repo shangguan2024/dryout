@@ -24,9 +24,16 @@ void GameMap::render(const glm::vec2 &center) const {
     }
 }
 
-void GameMap::test(const glm::vec2 &world_pos) {
+void GameMap::test(const glm::vec2 &world_pos, int test_type) {
     glm::ivec2 tile_index = tileIndex(world_pos);
-    tiles[tile_index.x][tile_index.y].setType(TileType::WET_SAND);
+    auto &tile = tiles[tile_index.x][tile_index.y];
+    if (test_type == 0) {
+        tile.setType(TileType::WET_SAND);
+    } else if (test_type == 1) {
+        if (tile.getType() == TileType::WET_SAND) {
+            tile.attachEntity(new Entity("sprout"));
+        }
+    }
 }
 
 glm::vec2 GameMap::tileWorldPos(int x, int y) const {

@@ -14,8 +14,7 @@ static constexpr float s_default_interaction_radius = 32.0f;
 
 Player::Player(const std::string &name)
     : position(0.0f), velocity(s_default_player_velocity), direction(0.0f),
-      interaction_radius(s_default_interaction_radius) {
-    sprite = ResourceManager::getInstance()->getSprite(TextureType::SPRITE, name, s_player_size);
+      interaction_radius(s_default_interaction_radius), Entity(name, s_player_size) {
     init();
 }
 
@@ -50,17 +49,20 @@ void Player::update(float delta) {
 }
 
 void Player::render() const {
-    sprite->render(position, 0.1f);
+    Entity::render(position);
 }
 
 void Player::init() {
     InputManager *input_manager = InputManager::getInstance();
     input_manager->registerMouseCallback(
         InputType::DOWN, MouseButton::LEFT,
-        [this](const glm::vec2 &screen_pos) { interact(screen_pos); });
+        [this](const glm::vec2 &screen_pos) { interact(screen_pos, 0); });
+    input_manager->registerMouseCallback(
+        InputType::DOWN, MouseButton::RIGHT,
+        [this](const glm::vec2 &screen_pos) { interact(screen_pos, 1); });
 }
 
-void Player::interact(const glm::vec2 &screen_pos) {
+void Player::interact(const glm::vec2 &screen_pos, int type) {
     Camera *camera = CameraManager::getInstance()->getActiveCamera();
     if (camera == nullptr) {
         return;
@@ -77,7 +79,7 @@ void Player::interact(const glm::vec2 &screen_pos) {
     }
 
     // TODO: get rid of test method
-    g_map->test(world_pos);
+    g_map->test(world_pos, type);
 }
 
 } // namespace dryout

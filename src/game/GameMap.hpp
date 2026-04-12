@@ -9,7 +9,7 @@
 namespace dryout {
 
 class GameMap;
-extern GameMap *g_map; // test
+inline GameMap *g_map = nullptr; // test
 
 class GameMap {
   public:
@@ -18,7 +18,7 @@ class GameMap {
 
     void render(const glm::vec2 &center) const;
 
-    void test(const glm::vec2 &world_pos); // To be removed
+    void test(const glm::vec2 &world_pos, int test_type); // To be removed
 
   private:
     glm::vec2 tileWorldPos(int x, int y) const;

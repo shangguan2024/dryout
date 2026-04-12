@@ -27,8 +27,6 @@ Game *Game::getInstance() {
     return instance;
 }
 
-GameMap *g_map = nullptr; // test
-
 void Game::run() {
     // test
     Graphics *graphics = Graphics::getInstance();
@@ -71,7 +69,7 @@ void Game::run() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        camera->setEye(glm::vec3(position, 100.0f * coef));
+        camera->setEye(glm::vec3(position + glm::vec2(0.0f, -100.0f * coef), 100.0f * coef));
         camera->setCenter(glm::vec3(position, 0.0f));
 
         Renderer::beginScene(camera->getViewProjectionMatrix());
@@ -88,7 +86,7 @@ void Game::run() {
         if (input_manager->isKeyDown(KeyCode::X)) {
             coef /= 0.95f;
         }
-        coef = std::clamp(coef, g_near / 100.0f + 0.1f, g_far / 100.0f - 0.1f);
+        coef = std::clamp(coef, g_near / 100.0f * 32.0f, g_far / 100.0f / 4.0f);
         player.update(delta);
         position = player.getPosition();
 

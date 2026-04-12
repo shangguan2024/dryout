@@ -8,6 +8,8 @@ using json = nlohmann::json;
 
 namespace dryout {
 
+// TileFlyweight
+
 TileFlyweight *TileFlyweight::instance = nullptr;
 
 TileFlyweight::TileFlyweight() {
@@ -38,9 +40,11 @@ void TileFlyweight::render(TileType type, const glm::vec2 &position) const {
     flyweight[static_cast<unsigned int>(type)]->render(position);
 }
 
-Tile::Tile() : type(TileType::UNKNOWN) {}
+// Tile
 
-Tile::Tile(TileType type) : type(type) {}
+Tile::Tile() : type(TileType::UNKNOWN), attached_entity(nullptr) {}
+
+Tile::Tile(TileType type) : type(type), attached_entity(nullptr) {}
 
 Tile::~Tile() {
     // TODO
@@ -59,6 +63,21 @@ void Tile::render(const glm::vec2 &position) const {
         return;
     }
     TileFlyweight::getInstance()->render(type, position);
+    if (attached_entity != nullptr) {
+        attached_entity->render(position);
+    }
+}
+
+void Tile::attachEntity(Entity *entity) {
+    attached_entity = entity;
+}
+
+void Tile::detachEntity() {
+    attached_entity = nullptr;
+}
+
+Entity *Tile::getAttachedEntity() const {
+    return attached_entity;
 }
 
 } // namespace dryout
