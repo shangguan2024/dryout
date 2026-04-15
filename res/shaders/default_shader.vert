@@ -1,4 +1,4 @@
-#version 430 core
+#version 460 core
 
 // struct QuadVertex {
 //     glm::vec3 position;
