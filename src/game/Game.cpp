@@ -71,6 +71,14 @@ void Game::run() {
             }
         }
 
+        glm::ivec2 screen_pos = input_manager->getMousePosition();
+        glm::mat2x3 ray = camera->getRay(screen_pos);
+        auto &near_point = ray[0];
+        auto &far_point = ray[1];
+        float t = -near_point.z / (far_point.z - near_point.z);
+        glm::vec2 world_pos = near_point + t * (far_point - near_point);
+        g_map->test(world_pos, 2);
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

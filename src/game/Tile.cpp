@@ -30,14 +30,14 @@ TileFlyweight *TileFlyweight::getInstance() {
     return instance;
 }
 
-void TileFlyweight::render(TileType type, const glm::vec2 &position) const {
+void TileFlyweight::render(TileType type, const glm::vec2 &position, const glm::vec4 &color) const {
     if (type == TileType::UNKNOWN) {
         return;
     }
     if (flyweight[static_cast<unsigned int>(type)] == nullptr) {
         return;
     }
-    flyweight[static_cast<unsigned int>(type)]->render(position);
+    flyweight[static_cast<unsigned int>(type)]->render(position, 1.0f, color);
 }
 
 // Tile
@@ -58,11 +58,11 @@ void Tile::setType(TileType type) {
     this->type = type;
 }
 
-void Tile::render(const glm::vec2 &position) const {
+void Tile::render(const glm::vec2 &position, const glm::vec4 &color) const {
     if (type == TileType::UNKNOWN) {
         return;
     }
-    TileFlyweight::getInstance()->render(type, position);
+    TileFlyweight::getInstance()->render(type, position, color);
     if (attached_entity != nullptr) {
         attached_entity->render(position);
     }

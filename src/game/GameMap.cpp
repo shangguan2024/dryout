@@ -9,6 +9,9 @@
 
 namespace dryout {
 
+static glm::ivec2 s_highlight_tile(-1);
+static const glm::vec4 s_highlight_color(1.5f, 1.5f, 1.5f, 1.0f);
+
 GameMap::GameMap(int width, int height)
     : width(width), height(height), map_center(glm::vec2(width, height) * g_tile_size / 2.0f),
       tiles(height, std::vector<Tile>(width, Tile(TileType::SAND))) {}
@@ -19,13 +22,22 @@ void GameMap::render(const glm::vec2 &center) const {
     // test
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
+            if (x == s_highlight_tile.x && y == s_highlight_tile.y) {
+                tiles[x][y].render(tileWorldPos(x, y), s_highlight_color);
+                continue;
+            }
             tiles[x][y].render(tileWorldPos(x, y));
         }
     }
+    s_highlight_tile = {-1, -1};
 }
 
 void GameMap::test(const glm::vec2 &world_pos, int test_type) {
     glm::ivec2 tile_index = tileIndex(world_pos);
+    if (test_type == 2) {
+        s_highlight_tile = tile_index;
+        return;
+    }
     auto &tile = tiles[tile_index.x][tile_index.y];
     if (test_type == 0) {
         tile.setType(TileType::WET_SAND);

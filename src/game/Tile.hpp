@@ -23,7 +23,8 @@ class TileFlyweight {
   public:
     static TileFlyweight *getInstance();
 
-    void render(TileType type, const glm::vec2 &position) const;
+    void render(TileType type, const glm::vec2 &position,
+                const glm::vec4 &color = glm::vec4(1.0f)) const;
 
   private:
     TileFlyweight();
@@ -47,7 +48,7 @@ class Tile {
     TileType getType() const;
     void setType(TileType type);
 
-    void render(const glm::vec2 &position) const;
+    void render(const glm::vec2 &position, const glm::vec4 &color = glm::vec4(1.0f)) const;
 
     void attachEntity(Entity *entity);
     void detachEntity();
