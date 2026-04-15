@@ -10,7 +10,7 @@
 namespace dryout {
 
 static glm::ivec2 s_highlight_tile(-1);
-static const glm::vec4 s_highlight_color(1.5f, 1.5f, 1.5f, 1.0f);
+static const glm::vec4 s_highlight_color(1.125f, 1.125f, 1.125f, 1.0f);
 
 GameMap::GameMap(int width, int height)
     : width(width), height(height), map_center(glm::vec2(width, height) * g_tile_size / 2.0f),

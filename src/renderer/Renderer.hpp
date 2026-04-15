@@ -20,9 +20,12 @@ class Renderer {
     static void shutdown();
 
     static struct RenderContext {
-        float polar_angle; // radians
+        // auxiliaries
+        float polar_angle; // in radians
+
+        // uniforms
         glm::mat4 view_projection_matrix;
-    } context;
+    } s_context;
 
     static void setShader(const std::shared_ptr<Shader> &shader);
 

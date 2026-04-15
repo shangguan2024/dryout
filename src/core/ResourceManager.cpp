@@ -31,7 +31,7 @@ ResourceManager::ResourceManager() {
     std::cout << "Textures loaded." << std::endl;
 
     std::cout << "Loading shaders..." << std::endl;
-    loadShader(root / "shaders", "frame_shader", frame_vertex_shader, frame_fragment_shader,
+    loadShader(root / "shaders", "default_shader", frame_vertex_shader, frame_fragment_shader,
                frame_shader);
     std::cout << "Shaders loaded." << std::endl;
 

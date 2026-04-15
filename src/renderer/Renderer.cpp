@@ -25,7 +25,7 @@ struct QuadVertex {
     float tex_index;
 };
 
-static constexpr int s_max_quad_count = 100'000;
+static constexpr int s_max_quad_count = 10'0000;
 static constexpr int s_max_vertex_count = s_max_quad_count * 4;
 static constexpr int s_max_index_count = s_max_quad_count * 6;
 
@@ -40,7 +40,7 @@ static int s_tex_slot_count;
 static GLuint s_tex_slots[s_max_tex_slot_count];
 
 static std::string s_default_vertex_shader = R"(
-#version 330 core
+#version 430 core
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec4 a_Color;
@@ -61,7 +61,7 @@ void main() {
 }
 )";
 static std::string s_default_fragment_shader = R"(
-#version 330 core
+#version 430 core
 
 layout(location = 0) out vec4 o_Color;
 
@@ -89,7 +89,7 @@ static GLuint s_vbo;
 static GLuint s_ebo;
 static GLuint s_vao;
 
-Renderer::RenderContext Renderer::context{};
+Renderer::RenderContext Renderer::s_context{};
 
 void Renderer::init() {
     std::cout << "Initializing renderer..." << std::endl;
@@ -192,7 +192,7 @@ void Renderer::beginScene() {
     s_vertex_count = 0;
     s_index_count = 0;
     s_shader->bind();
-    s_shader->setMat4("u_ViewProjectionMatrix", context.view_projection_matrix);
+    s_shader->setMat4("u_ViewProjectionMatrix", s_context.view_projection_matrix);
 }
 
 void Renderer::endScene() {
@@ -251,7 +251,7 @@ void Renderer::drawQuad(const glm::vec3 &position, const glm::vec2 &size, Render
     const auto &ts = tex_size;
     glm::vec2 yz(s.y, 0.0f);
     if (type == RenderType::BILLBOARD) {
-        yz = glm::rotate(yz, context.polar_angle); // TODO: 3d billboard rotation
+        yz = glm::rotate(yz, s_context.polar_angle); // TODO: 3d billboard rotation
     }
     glm::vec3 rd(s.x, 0.0f, 0.0f);
     glm::vec3 ld(0.0f, 0.0f, 0.0f);

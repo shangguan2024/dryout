@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 
 layout(location = 0) out vec4 o_Color;
 
@@ -45,7 +45,7 @@ void main() {
     //     break;
     // }
 
-    if (texColor.a < 0.1) {
+    if(texColor.a < 0.1) {
         discard;
     }
     o_Color = texColor;

@@ -44,7 +44,7 @@ void Game::run() {
     g_map = new GameMap(63, 63);
 
     auto fillRenderContext = [&]() {
-        auto &context = Renderer::context;
+        auto &context = Renderer::s_context;
         context.polar_angle = camera->getPolarAngle();
         context.view_projection_matrix = camera->getViewProjectionMatrix();
     };
