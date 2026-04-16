@@ -1,6 +1,7 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
+#include "Light.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
 
@@ -35,7 +36,8 @@ class Renderer {
     static void drawQuad(const glm::vec3 &position, const glm::vec2 &size, RenderType type,
                          const glm::vec4 &color, const std::shared_ptr<Texture> &texture,
                          const glm::vec2 &texture_coords,
-                         const glm::vec2 &texture_size); // TODO
+                         const glm::vec2 &texture_size); // TODO: overflow...
+    static void putLight(const Light &light);            // TODO: overflow...
 
   private:
     static void flush();

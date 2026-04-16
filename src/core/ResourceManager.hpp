@@ -57,7 +57,7 @@ class ResourceManager {
     json ui_atlas, tileset_atlas, sprite_atlas;
     std::shared_ptr<Texture> ui_atlas_texture, tileset_atlas_texture, sprite_atlas_texture;
     std::string frame_vertex_shader, frame_fragment_shader;
-    std::shared_ptr<Shader> frame_shader;
+    std::shared_ptr<Shader> basic_shader;
 };
 
 } // namespace dryout

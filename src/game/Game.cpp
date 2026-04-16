@@ -34,6 +34,10 @@ void Game::run() {
     InputManager *input_manager = InputManager::getInstance();
     CameraManager *camera_manager = CameraManager::getInstance();
 
+    // keep
+    Renderer::setShader(resource_manager->getShader(ShaderType::BASIC));
+
+    // discard
     int frame_rate = 60;
     float velocity = 100.0f;
     float delta = 1.0f / frame_rate;
@@ -42,6 +46,16 @@ void Game::run() {
     camera_manager->registerCamera(camera, true);
     Player player;
     g_map = new GameMap(63, 63);
+
+    input_manager->registerKeyCallback(InputType::DOWN, KeyCode::ENTER, [&]() {
+        static int cur = 1;
+        if (cur) {
+            Renderer::setShader(resource_manager->getShader(ShaderType::NONE));
+        } else {
+            Renderer::setShader(resource_manager->getShader(ShaderType::BASIC));
+        }
+        cur ^= 1;
+    });
 
     auto fillRenderContext = [&]() {
         auto &context = Renderer::s_context;
@@ -70,6 +84,9 @@ void Game::run() {
                 // std::cout << "Unknown event type: " << event.type << std::endl;
             }
         }
+
+        Renderer::putLight(Light::createPointLight({-100, 100, 100}, {}, 0, 0, 0, 0, 0));
+        Renderer::putLight(Light::createSpotLight(glm::vec3(100.0f), {}, {}, 0, 0, 0, 0, 0, 0, 1));
 
         glm::ivec2 screen_pos = input_manager->getMousePosition();
         glm::mat2x3 ray = camera->getRay(screen_pos);

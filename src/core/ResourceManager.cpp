@@ -31,8 +31,8 @@ ResourceManager::ResourceManager() {
     std::cout << "Textures loaded." << std::endl;
 
     std::cout << "Loading shaders..." << std::endl;
-    loadShader(root / "shaders", "default_shader", frame_vertex_shader, frame_fragment_shader,
-               frame_shader);
+    loadShader(root / "shaders", "basic_shader", frame_vertex_shader, frame_fragment_shader,
+               basic_shader);
     std::cout << "Shaders loaded." << std::endl;
 
     std::cout << "Resource manager initialized." << std::endl;
@@ -117,7 +117,7 @@ const json &ResourceManager::getTextureFrameInfo(TextureType type,
 std::shared_ptr<Shader> ResourceManager::getShader(ShaderType type) const {
     switch (type) {
     case ShaderType::BASIC:
-        return frame_shader;
+        return basic_shader;
     default:
         std::cerr << "Error: Invalid shader type." << std::endl;
         return nullptr;

@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 #include "Shader.hpp"
+#include "Light.hpp"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -28,19 +29,22 @@ struct QuadVertex {
     int tex_index;
 };
 
+static constexpr int s_max_tex_slot_count = 32;
+static int s_tex_slot_count;
+static GLuint s_tex_slots[s_max_tex_slot_count];
+
 static constexpr int s_max_quad_count = 10'0000;
 static constexpr int s_max_vertex_count = s_max_quad_count * 4;
 static constexpr int s_max_index_count = s_max_quad_count * 6;
-
 static QuadVertex s_quad_vertices[s_max_vertex_count];
 static unsigned int s_quad_indices[s_max_index_count];
 static int s_quad_count = 0;
 static int s_vertex_count = 0;
 static int s_index_count = 0;
 
-static constexpr int s_max_tex_slot_count = 32;
-static int s_tex_slot_count;
-static GLuint s_tex_slots[s_max_tex_slot_count];
+static constexpr int s_max_light_count = 1000;
+static Light s_lights[s_max_light_count];
+static int s_light_count = 0;
 
 static std::string s_default_vertex_shader = R"(
 #version 460 core
@@ -80,27 +84,24 @@ layout(location = 4) flat in int v_TexIndex;
 layout(location = 0) out vec4 o_Color;
 
 uniform sampler2D u_Textures[32];
-// TODO: uniform lights
+uniform int u_LightCount;
 
 void main() {
+    int dummy = u_LightCount;
     vec4 texColor = texture(u_Textures[v_TexIndex], v_TexCoord);
-
-    // test
-    vec3 lightPos = vec3(0.0, 0.0, 200.0);
-    float ambient = 0.1;
-    float diffuse = max(dot(normalize(lightPos - v_FragPos), normalize(v_Normal)), 0.0);
 
     if(texColor.a < 0.1) {
         discard;
     }
-    o_Color = vec4((ambient + diffuse) * texColor.xyz, texColor.a) * v_Color;
+    o_Color = texColor * v_Color;
 }
 )";
 
-static std::shared_ptr<Shader> s_shader;
+static std::shared_ptr<Shader> s_shader, s_default_shader;
 static GLuint s_vbo;
 static GLuint s_ebo;
 static GLuint s_vao;
+static GLuint s_ssbo;
 
 Renderer::RenderContext Renderer::s_context{};
 
@@ -122,7 +123,8 @@ void Renderer::init() {
     glEnable(GL_DEPTH_TEST);
 
     // Set the shader to be used by the renderer
-    s_shader = std::make_shared<Shader>(s_default_vertex_shader, s_default_fragment_shader);
+    s_default_shader = std::make_shared<Shader>(s_default_vertex_shader, s_default_fragment_shader);
+    s_shader = s_default_shader;
 
     // Initialize shader
     s_shader->bind();
@@ -166,10 +168,18 @@ void Renderer::init() {
     glVertexAttribIPointer(4, 1, GL_INT, sizeof(QuadVertex),
                            (void *)offsetof(QuadVertex, tex_index));
 
+    // Create and bind the shader storage buffer object (SSBO)
+    glGenBuffers(1, &s_ssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_ssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Light) * s_max_light_count, nullptr,
+                 GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s_ssbo);
+
     // Unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -199,7 +209,17 @@ void Renderer::shutdown() {
 }
 
 void Renderer::setShader(const std::shared_ptr<Shader> &shader) {
-    s_shader = shader;
+    if (shader == nullptr) {
+        s_shader = s_default_shader;
+    } else {
+        s_shader = shader;
+    }
+    s_shader->bind();
+    int samplers[32];
+    for (int i = 0; i < 32; i++) {
+        samplers[i] = i;
+    }
+    s_shader->setIntArray("u_Textures", samplers, 32);
 }
 
 void Renderer::beginScene() {
@@ -208,10 +228,16 @@ void Renderer::beginScene() {
     s_index_count = 0;
     s_shader->bind();
     s_shader->setMat4("u_ViewProjectionMatrix", s_context.view_projection_matrix);
+    s_shader->setInt("u_LightCount", s_light_count);
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, s_ssbo);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(Light) * s_light_count, s_lights);
 }
 
 void Renderer::endScene() {
     flush();
+    s_light_count = 0;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void Renderer::flush() {
@@ -220,6 +246,7 @@ void Renderer::flush() {
     }
 
     s_shader->bind();
+
     glBindVertexArray(s_vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, s_vbo);
@@ -291,6 +318,10 @@ void Renderer::drawQuad(const glm::vec3 &position, const glm::vec2 &size, Render
     s_quad_indices[s_index_count++] = s_vertex_count - 4;
 
     s_quad_count++;
+}
+
+void Renderer::putLight(const Light &light) {
+    s_lights[s_light_count++] = light;
 }
 
 void Renderer::resetTextureSlots() {

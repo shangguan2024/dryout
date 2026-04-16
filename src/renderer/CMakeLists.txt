@@ -2,6 +2,7 @@ add_library(renderer
     STATIC
     Renderer.cpp
     Sprite.cpp
+    Light.cpp
 )
 
 target_include_directories(renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
