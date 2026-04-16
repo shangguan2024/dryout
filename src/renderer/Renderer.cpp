@@ -13,16 +13,19 @@ namespace dryout {
 
 struct QuadVertex {
     QuadVertex() {}
-    QuadVertex(const glm::vec3 &position, const glm::vec4 &color, const glm::vec2 &tex_coord,
-               float tex_index)
-        : position(position), color(color), tex_coord(tex_coord), tex_index(tex_index) {}
-    QuadVertex(float x, float y, float z, float r, float g, float b, float a, float s, float t,
-               float tex_index)
-        : position(x, y, z), color(r, g, b, a), tex_coord(s, t), tex_index(tex_index) {}
+    QuadVertex(const glm::vec3 &position, const glm::vec3 &normal, const glm::vec4 &color,
+               const glm::vec2 &tex_coord, int tex_index)
+        : position(position), normal(normal), color(color), tex_coord(tex_coord),
+          tex_index(tex_index) {}
+    QuadVertex(float x, float y, float z, float nx, float ny, float nz, float r, float g, float b,
+               float a, float s, float t, int tex_index)
+        : position(x, y, z), normal(nx, ny, nz), color(r, g, b, a), tex_coord(s, t),
+          tex_index(tex_index) {}
     glm::vec3 position;
+    glm::vec3 normal;
     glm::vec4 color;
     glm::vec2 tex_coord;
-    float tex_index;
+    int tex_index;
 };
 
 static constexpr int s_max_quad_count = 10'0000;
@@ -43,44 +46,54 @@ static std::string s_default_vertex_shader = R"(
 #version 460 core
 
 layout(location = 0) in vec3 a_Position;
-layout(location = 1) in vec4 a_Color;
-layout(location = 2) in vec2 a_TexCoord;
-layout(location = 3) in float a_TexIndex;
+layout(location = 1) in vec3 a_Normal;
+layout(location = 2) in vec4 a_Color;
+layout(location = 3) in vec2 a_TexCoord;
+layout(location = 4) in int a_TexIndex;
 
-out vec2 v_TexCoord;
-out vec4 v_Color;
-out float v_TexIndex;
+layout(location = 0) out vec3 v_FragPos;
+layout(location = 1) out vec3 v_Normal;
+layout(location = 2) out vec4 v_Color;
+layout(location = 3) out vec2 v_TexCoord;
+layout(location = 4) flat out int v_TexIndex;
 
 uniform mat4 u_ViewProjectionMatrix;
 
 void main() {
     gl_Position = u_ViewProjectionMatrix * vec4(a_Position, 1.0);
-    v_TexCoord = a_TexCoord;
+    v_FragPos = a_Position;
+    v_Normal = a_Normal;
     v_Color = a_Color;
+    v_TexCoord = a_TexCoord;
     v_TexIndex = a_TexIndex;
 }
 )";
 static std::string s_default_fragment_shader = R"(
 #version 460 core
 
+layout(location = 0) in vec3 v_FragPos;
+layout(location = 1) in vec3 v_Normal;
+layout(location = 2) in vec4 v_Color;
+layout(location = 3) in vec2 v_TexCoord;
+layout(location = 4) flat in int v_TexIndex;
+
 layout(location = 0) out vec4 o_Color;
 
-in vec2 v_TexCoord;
-in vec4 v_Color;
-in float v_TexIndex;
-
 uniform sampler2D u_Textures[32];
+// TODO: uniform lights
 
 void main() {
-    vec4 texColor = v_Color;
+    vec4 texColor = texture(u_Textures[v_TexIndex], v_TexCoord);
 
-    int index = int(v_TexIndex);
-    texColor *= texture(u_Textures[index], v_TexCoord);
+    // test
+    vec3 lightPos = vec3(0.0, 0.0, 200.0);
+    float ambient = 0.1;
+    float diffuse = max(dot(normalize(lightPos - v_FragPos), normalize(v_Normal)), 0.0);
 
-    if (texColor.a < 0.1) {
+    if(texColor.a < 0.1) {
         discard;
     }
-    o_Color = texColor;
+    o_Color = vec4((ambient + diffuse) * texColor.xyz, texColor.a) * v_Color;
 }
 )";
 
@@ -137,19 +150,21 @@ void Renderer::init() {
     // Create and bind the vertex array object (VAO)
     glGenVertexArrays(1, &s_vao);
     glBindVertexArray(s_vao);
+    glEnableVertexAttribArray(0); // position
+    glEnableVertexAttribArray(1); // normal
+    glEnableVertexAttribArray(2); // color
+    glEnableVertexAttribArray(3); // tex_coord
+    glEnableVertexAttribArray(4); // tex_index
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
                           (void *)offsetof(QuadVertex, position));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
+                          (void *)offsetof(QuadVertex, normal));
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
                           (void *)offsetof(QuadVertex, color));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
                           (void *)offsetof(QuadVertex, tex_coord));
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(QuadVertex),
-                          (void *)offsetof(QuadVertex, tex_index));
-    glEnableVertexAttribArray(3);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_ebo);
+    glVertexAttribIPointer(4, 1, GL_INT, sizeof(QuadVertex),
+                           (void *)offsetof(QuadVertex, tex_index));
 
     // Unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -257,10 +272,15 @@ void Renderer::drawQuad(const glm::vec3 &position, const glm::vec2 &size, Render
     glm::vec3 ld(0.0f, 0.0f, 0.0f);
     glm::vec3 lu(0.0f, yz);
     glm::vec3 ru(s.x, yz);
-    s_quad_vertices[s_vertex_count++] = QuadVertex(p + rd, color, tc + ts, tex_slot);
-    s_quad_vertices[s_vertex_count++] = QuadVertex(p + ld, color, {tc.x, tc.y + ts.y}, tex_slot);
-    s_quad_vertices[s_vertex_count++] = QuadVertex(p + lu, color, tc, tex_slot);
-    s_quad_vertices[s_vertex_count++] = QuadVertex(p + ru, color, {tc.x + ts.x, tc.y}, tex_slot);
+    glm::vec3 n = glm::normalize(glm::cross(rd, lu));
+    if (type == RenderType::BILLBOARD) {
+        // TODO: better solution
+        n = glm::vec3(0.0f, 0.0f, 1.0f);
+    }
+    s_quad_vertices[s_vertex_count++] = QuadVertex(p + rd, n, color, tc + ts, tex_slot);
+    s_quad_vertices[s_vertex_count++] = QuadVertex(p + ld, n, color, {tc.x, tc.y + ts.y}, tex_slot);
+    s_quad_vertices[s_vertex_count++] = QuadVertex(p + lu, n, color, tc, tex_slot);
+    s_quad_vertices[s_vertex_count++] = QuadVertex(p + ru, n, color, {tc.x + ts.x, tc.y}, tex_slot);
 
     // Add the quad indices to the buffer
     s_quad_indices[s_index_count++] = s_vertex_count - 4;
