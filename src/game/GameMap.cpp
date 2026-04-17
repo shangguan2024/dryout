@@ -5,7 +5,6 @@
 #include "CameraManager.hpp"
 
 #include <glm/glm.hpp>
-#include <iostream>
 
 namespace dryout {
 

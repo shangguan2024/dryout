@@ -1,7 +1,5 @@
 #include "InputManager.hpp"
 
-#include <iostream>
-
 namespace dryout {
 
 static KeyCode sdlKeyToEnum(SDL_Scancode key) {
