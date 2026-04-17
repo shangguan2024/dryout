@@ -14,6 +14,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <iostream>
 
 namespace dryout {
@@ -41,7 +42,7 @@ void Game::run() {
     int frame_rate = 60;
     float velocity = 100.0f;
     float delta = 1.0f / frame_rate;
-    glm::vec2 position = glm::vec2(0.0f);
+    glm::vec2 position(0.0f), light_pos(150.0f, 0.0f);
     Camera *camera = new Camera();
     camera_manager->registerCamera(camera, true);
     Player player;
@@ -85,8 +86,11 @@ void Game::run() {
             }
         }
 
-        Renderer::putLight(Light::createPointLight({-100, 100, 100}, {}, 0, 0, 0, 0, 0));
-        Renderer::putLight(Light::createSpotLight(glm::vec3(100.0f), {}, {}, 0, 0, 0, 0, 0, 0, 1));
+        light_pos = glm::rotate(light_pos, glm::radians(frame_rate / 300.0f));
+        glm::vec3 col(1), p0(light_pos.x, 0, light_pos.y), p1(light_pos, 50);
+        Renderer::putLight(Light::createDirectionalLight(p0, col, 1));
+        Renderer::putLight(Light::createPointLight(p1, col, 200, 1, 1, 0.022, 0.0019));
+        Renderer::putLight(Light::createSpotLight({200, 250, 100}, {}, col, 0, 0, 0, 0, 0, 0, 1));
 
         glm::ivec2 screen_pos = input_manager->getMousePosition();
         glm::mat2x3 ray = camera->getRay(screen_pos);

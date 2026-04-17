@@ -13,14 +13,15 @@ struct Light {
     char _padding[12]; // align to 16 bytes
     glm::vec3 color;
     float intensity;
-    glm::vec3 direction; // directional & spot
-    float range;         //       point & spot
-    glm::vec3 position;  //       point & spot
-    float spot_inner_cone;
-    float spot_outer_cone;
-    float constant;
-    float linear;
-    float quadratic;
+    glm::vec3 direction;   // directional & spot
+    float range;           //       point & spot
+    glm::vec3 position;    //       point & spot
+    float spot_inner_cone; //               spot
+    float spot_outer_cone; //               spot
+    float constant;        //       point & spot
+    float linear;          //       point & spot
+    float quadratic;       //       point & spot
+
     //    attenuation = 1.0 / (constant + linear * dist + quadratic * dist * dist)
     //    spot_factor = dot(-light_dir, spot_dir)
     // spot_intensity = clamp((spot_factor - outer_cone) / (inner_cone - outer_cone), 0.0, 1.0)
