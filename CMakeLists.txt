@@ -27,6 +27,6 @@ install(DIRECTORY res/shaders/ DESTINATION res/shaders)
 install(DIRECTORY res/textures/atlas/ DESTINATION res/textures)
 
 set(CPACK_PACKAGE_NAME "dryout")
-set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_VERSION "0.1.0")
 set(CPACK_GENERATOR "ZIP")
 include(CPack)

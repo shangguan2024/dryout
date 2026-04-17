@@ -3,6 +3,7 @@ add_library(core
     ResourceManager.cpp
     InputManager.cpp
     CameraManager.cpp
+    Clock.cpp
 )
 
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

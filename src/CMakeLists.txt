@@ -6,7 +6,11 @@ find_package(SDL2_image CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
-add_executable(dryout main.cpp)
+add_executable(dryout WIN32 MACOSX_BUNDLE main.cpp)
+
+set_target_properties(dryout PROPERTIES
+    WIN32_EXECUTABLE $<NOT:$<CONFIG:Debug>>
+)
 
 add_subdirectory(core)
 add_subdirectory(renderer)

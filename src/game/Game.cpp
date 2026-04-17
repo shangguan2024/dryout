@@ -7,6 +7,7 @@
 #include "GameMap.hpp"
 #include "Player.hpp"
 #include "CameraManager.hpp"
+#include "Clock.hpp"
 
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
@@ -42,11 +43,14 @@ void Game::run() {
     int frame_rate = 60;
     float velocity = 100.0f;
     float delta = 1.0f / frame_rate;
-    glm::vec2 position(0.0f), light_pos(150.0f, 0.0f);
+    Clock clock;
+    glm::vec2 position(0.0f), light_pos(-1.0f, 0.0f);
     Camera *camera = new Camera();
     camera_manager->registerCamera(camera, true);
     Player player;
-    g_map = new GameMap(63, 63);
+    g_map = new GameMap(127, 127);
+    float coef = 1.0;
+    bool lights_on = true;
 
     input_manager->registerKeyCallback(InputType::DOWN, KeyCode::ENTER, [&]() {
         static int cur = 1;
@@ -57,6 +61,7 @@ void Game::run() {
         }
         cur ^= 1;
     });
+    input_manager->registerKeyCallback(InputType::DOWN, KeyCode::L, [&]() { lights_on ^= 1; });
 
     auto fillRenderContext = [&]() {
         auto &context = Renderer::s_context;
@@ -66,9 +71,20 @@ void Game::run() {
 
     bool running = true;
     SDL_Event event;
-
-    float coef = 1.0;
+    clock.update();
     while (running) {
+        auto parseInputs = [&]() {
+            if (input_manager->isKeyDown(KeyCode::ESC)) {
+                running = false;
+            }
+            if (input_manager->isKeyDown(KeyCode::Z)) {
+                coef *= 0.95f;
+            }
+            if (input_manager->isKeyDown(KeyCode::X)) {
+                coef /= 0.95f;
+            }
+        };
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
@@ -86,25 +102,28 @@ void Game::run() {
             }
         }
 
-        light_pos = glm::rotate(light_pos, glm::radians(frame_rate / 300.0f));
-        glm::vec3 col(1), p0(light_pos.x, 0, light_pos.y), p1(light_pos, 50);
-        Renderer::putLight(Light::createDirectionalLight(p0, col, 1));
-        Renderer::putLight(Light::createPointLight(p1, col, 200, 1, 1, 0.022, 0.0019));
-        Renderer::putLight(Light::createSpotLight({200, 250, 100}, {}, col, 0, 0, 0, 0, 0, 0, 1));
+        { // test method
+            glm::ivec2 screen_pos = input_manager->getMousePosition();
+            glm::mat2x3 ray = camera->getRay(screen_pos);
+            auto &near_point = ray[0];
+            auto &far_point = ray[1];
+            float t = -near_point.z / (far_point.z - near_point.z);
+            glm::vec2 world_pos = near_point + t * (far_point - near_point);
+            g_map->test(world_pos, 2);
+        }
 
-        glm::ivec2 screen_pos = input_manager->getMousePosition();
-        glm::mat2x3 ray = camera->getRay(screen_pos);
-        auto &near_point = ray[0];
-        auto &far_point = ray[1];
-        float t = -near_point.z / (far_point.z - near_point.z);
-        glm::vec2 world_pos = near_point + t * (far_point - near_point);
-        g_map->test(world_pos, 2);
+        camera->setEye(glm::vec3(position + glm::vec2(0.0f, -100.0f * coef), 100.0f * coef));
+        camera->setCenter(glm::vec3(position, 0.0f));
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        camera->setEye(glm::vec3(position + glm::vec2(0.0f, -100.0f * coef), 100.0f * coef));
-        camera->setCenter(glm::vec3(position, 0.0f));
+        light_pos = glm::rotate(light_pos, glm::radians(frame_rate / 3000.0f));
+        glm::vec3 col(1), p0(light_pos.x, 0, light_pos.y), p1(position, 15);
+        Renderer::putLight(Light::createDirectionalLight(p0, col, 1));
+        if (lights_on) {
+            Renderer::putLight(Light::createPointLight(p1, col, 200, 0.5, 1, 0.022, 0.0019));
+        }
 
         fillRenderContext();
         Renderer::beginScene();
@@ -112,23 +131,14 @@ void Game::run() {
         g_map->render(position);
         Renderer::endScene();
 
-        if (input_manager->isKeyDown(KeyCode::ESC)) {
-            running = false;
-        }
-        if (input_manager->isKeyDown(KeyCode::Z)) {
-            coef *= 0.95f;
-        }
-        if (input_manager->isKeyDown(KeyCode::X)) {
-            coef /= 0.95f;
-        }
+        parseInputs();
         coef = std::clamp(coef, g_near / 100.0f * 32.0f, g_far / 100.0f / 4.0f);
-        player.update(delta);
+        clock.update();
+        player.update(clock.getDeltaSeconds());
         position = player.getPosition();
 
         graphics->swapWindow();
-
         SDL_Delay(int(1000.0f / frame_rate));
-        delta = 1.0f / frame_rate;
     }
 }
 
