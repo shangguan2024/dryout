@@ -12,6 +12,10 @@ set_target_properties(dryout PROPERTIES
     WIN32_EXECUTABLE $<NOT:$<CONFIG:Debug>>
 )
 
+if(MINGW)
+    target_link_options(dryout PRIVATE -static-libgcc -static-libstdc++ -static)
+endif()
+
 add_subdirectory(core)
 add_subdirectory(renderer)
 add_subdirectory(graphics)
